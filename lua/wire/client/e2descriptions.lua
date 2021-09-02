@@ -848,6 +848,9 @@ E2Helper.Descriptions["ioOutputEntities(s)"] = "Returns an array of all entities
 E2Helper.Descriptions["runOnLast(n)"] = "If set to 1, the chip will run once when it is removed, setting the last() flag when it does"
 E2Helper.Descriptions["selfDestruct()"] = "Removes the expression"
 E2Helper.Descriptions["selfDestructAll()"] = "Removes the expression and all constrained props"
+E2Helper.Descriptions["runString(s)"] = "Runs E2 code from a string, in a local scope. It still has access to all of your functions and directive vars, so do not trust user input with this!"
+E2Helper.Descriptions["line()"] = "Returns the current line in the code where it is called"
+E2Helper.Descriptions["linechar()"] = "Returns the current character (from the line) in the code where it is called"
 
 -- Debug
 E2Helper.Descriptions["playerCanPrint()"] = "Returns whether or not the next print-message will be printed or omitted by antispam"

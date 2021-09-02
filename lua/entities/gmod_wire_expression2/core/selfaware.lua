@@ -243,3 +243,49 @@ end
 e2function number hash( string str )
 	return getHash( self, str )
 end
+
+local PreProcessor, Tokenizer, Parser, Optimizer, Compiler = E2Lib.PreProcessor.Execute, E2Lib.Tokenizer.Execute, E2Lib.Parser.Execute, E2Lib.Optimizer.Execute, E2Lib.Compiler.Execute
+local raise = E2Lib.raiseException
+
+__e2setcost(2)
+e2function number line()
+	return self.trace[1]
+end
+
+e2function number linechar()
+	return self.trace[2]
+end
+
+--- Runs E2 code from a string. Be sure to use try {} catch() {} if you want to handle the errors
+local fmt = string.format
+
+__e2setcost(500)
+e2function void runString(string code)
+	local chip = self.entity
+
+	local status, directives, code = PreProcessor(code, nil, self)
+	if not status then return raise( fmt("Preprocessor Error [%s]", directives), 2, self.trace) end
+
+	local status, tokens = Tokenizer(code)
+	if not status then return raise( fmt("Tokenizer Error [%s]", tokens), 2, self.trace) end
+
+	local status, tree, dvars = Parser(tokens)
+	if not status then return raise( fmt("Parser Error [%s]", tree), 2, self.trace) end
+
+	status, tree = Optimizer(tree)
+	if not status then return raise( fmt("Optimizer Error [%s]", tree), 2, self.trace) end
+
+	local status, script, inst = Compiler(tree, chip.inports[3], chip.outports[3], chip.persists and chip.persists[3] or {}, dvars, chip.includes)
+
+	if not status then return raise( fmt("Compiler Error [%s]", script), 2, self.trace) end
+
+	self:PushScope()
+		-- pcall so we can pop the scope
+		local success, why = pcall( script[1], self, script )
+	self:PopScope()
+
+	if not success then
+		-- Failed, throw the error back to the error handler
+		error(why, 0)
+	end
+end
