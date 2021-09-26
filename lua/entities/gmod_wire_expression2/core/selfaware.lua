@@ -256,11 +256,8 @@ e2function number linechar()
 	return self.trace[2]
 end
 
---- Runs E2 code from a string. Be sure to use try {} catch() {} if you want to handle the errors
 local fmt = string.format
-
-__e2setcost(500)
-e2function void runString(string code)
+local RunExpressionString = function(self, code)
 	local chip = self.entity
 
 	local status, directives, code = PreProcessor(code, nil, self)
@@ -287,5 +284,19 @@ e2function void runString(string code)
 	if not success then
 		-- Failed, throw the error back to the error handler
 		error(why, 0)
+	end
+end
+
+__e2setcost(500)
+--- Runs E2 code from a string. Be sure to use try {} catch() {} if you want to handle the errors
+e2function void runString(string code)
+	local runningOpsBackup
+	if SF then -- everyone, clap, thanks to Starfall for patching string metatable... (this is required to avoid "error in error handling" and related/obscure issues)
+		runningOpsBackup = SF.runningOps
+		SF.runningOps = nil
+	end
+	RunExpressionString(self, code)
+	if SF then
+		SF.runningOps = runningOpsBackup
 	end
 end
