@@ -1,15 +1,7 @@
 
 -- This is a special type (for advanced users only).
 -- Sole purpose of bypassing type checker and being able to pass table's values directly when doing stringcalls.
-registerType("unknown", "xxx", nil,
-  nil,
-  nil,
-  function()
-  end,
-  function(v)
-    return true -- Always "banned"; help prevent users from creating variables of this type.
-  end
-)
+registerType("unknown", "xxx")
 
 --[[ Example Test E2 code:
 function myFunc(Msg:string) { print("[myFunc(s)] " + Msg) }

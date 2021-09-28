@@ -1051,25 +1051,25 @@ registerCallback( "postinit", function()
 		__e2setcost(5)
 
 		-- Getters
-		registerOperator("idx",	id.."=ts"		, id, function(self,args)
-			if id == "xxx" then return end -- Bypass type checker, custom handling lives at stringcall
+		local function table_getter(self, args)
 			local op1, op2 = args[2], args[3]
-			local tbl, key = op1[1](self, op1), op2[1](self, op2)
-			local value, typeid = tbl.s[key], tbl.stypes[key]
-			if (value == nil or typeid ~= id) then return fixDefault(v[2]) end
-			if (v[6] and v[6](value)) then return fixDefault(v[2]) end -- Type check
+			local targetTable, targetKey = op1[1](self, op1), op2[1](self, op2)
+			local typeid, value
+			if isnumber(targetKey) then
+				typeid, value = targetTable.ntypes[targetKey], targetTable.n[targetKey]
+			else
+				typeid, value = targetTable.stypes[targetKey], targetTable.s[targetKey]
+			end
+			if id == "xxx" then -- Bypass type checker, custom handling lives at stringcall
+				return {typeid, value}
+			end
+			if value == nil or typeid ~= id or (v[6] and v[6](value)) then -- Type check
+				return fixDefault(v[2])
+			end
 			return value
-		end)
-
-		registerOperator("idx",	id.."=tn"		, id, function(self,args)
-			if id == "xxx" then return end -- Bypass type checker, custom handling lives at stringcall
-			local op1, op2 = args[2], args[3]
-			local tbl, index = op1[1](self, op1), op2[1](self, op2)
-			local value, typeid = tbl.n[index], tbl.ntypes[index]
-			if (value == nil or typeid ~= id) then return fixDefault(v[2]) end
-			if (v[6] and v[6](value)) then return fixDefault(v[2]) end -- Type check
-			return value
-		end)
+		end
+		registerOperator("idx", id.."=ts", id, table_getter)
+		registerOperator("idx", id.."=tn", id, table_getter)
 
 		-- Setters
 		registerOperator("idx", id.."=ts"..id , id, function( self, args )

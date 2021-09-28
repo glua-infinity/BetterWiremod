@@ -87,13 +87,8 @@ registerOperator( "stringcall", "", "", function(self, args)
 		if value == "xxx" then
 			local arg = funcargs[argn]
 			assert(arg.TraceName == "GET", "unsupported 'unknown' typing")
-			local targetTable, targetKey, targetTypeID, targetValue = arg[2][1](self), arg[3][1](self)
-			if isnumber(targetKey) then
-				targetTypeID, targetValue = targetTable.ntypes[targetKey], targetTable.n[targetKey]
-			else
-				targetTypeID, targetValue = targetTable.stypes[targetKey], targetTable.s[targetKey]
-			end
-			 typeids[key], arg.TraceName, arg[1], arg[2], arg[3] = targetTypeID, "LITERAL", function() return targetValue end
+			local targetTypeID, targetValue = unpack(arg[1](self, arg))
+			typeids[key], arg.TraceName, arg[1], arg[2], arg[3] = targetTypeID, "LITERAL", function() return targetValue end
 		end
 		argn = argn + 1
 	end
