@@ -114,6 +114,7 @@ end
 e2_include_init()
 
 e2_include("core.lua")
+e2_include("unknown.lua")
 e2_include("array.lua")
 e2_include("number.lua")
 e2_include("vector.lua")

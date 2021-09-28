@@ -1052,19 +1052,23 @@ registerCallback( "postinit", function()
 
 		-- Getters
 		registerOperator("idx",	id.."=ts"		, id, function(self,args)
+			if id == "xxx" then return end -- Bypass type checker, custom handling lives at stringcall
 			local op1, op2 = args[2], args[3]
-			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-			if (!rv1.s[rv2] or rv1.stypes[rv2] != id) then return fixDefault(v[2]) end
-			if (v[6] and v[6](rv1.s[rv2])) then return fixDefault(v[2]) end -- Type check
-			return rv1.s[rv2]
+			local tbl, key = op1[1](self, op1), op2[1](self, op2)
+			local value, typeid = tbl.s[key], tbl.stypes[key]
+			if (value == nil or typeid ~= id) then return fixDefault(v[2]) end
+			if (v[6] and v[6](value)) then return fixDefault(v[2]) end -- Type check
+			return value
 		end)
 
 		registerOperator("idx",	id.."=tn"		, id, function(self,args)
+			if id == "xxx" then return end -- Bypass type checker, custom handling lives at stringcall
 			local op1, op2 = args[2], args[3]
-			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-			if (!rv1.n[rv2] or rv1.ntypes[rv2] != id) then return fixDefault(v[2]) end
-			if (v[6] and v[6](rv1.n[rv2])) then return fixDefault(v[2]) end -- Type check
-			return rv1.n[rv2]
+			local tbl, index = op1[1](self, op1), op2[1](self, op2)
+			local value, typeid = tbl.n[index], tbl.ntypes[index]
+			if (value == nil or typeid ~= id) then return fixDefault(v[2]) end
+			if (v[6] and v[6](value)) then return fixDefault(v[2]) end -- Type check
+			return value
 		end)
 
 		-- Setters
