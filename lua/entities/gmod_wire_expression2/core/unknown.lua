@@ -1,4 +1,4 @@
-local UNKNOWN_TYPENAME, UNKNOWN_TYPEID, createUnknown, isUnknown = "unknown", "xxx", E2Lib.createUnknown, E2Lib.isUnknown
+local UNKNOWN_TYPENAME, UNKNOWN_TYPEID, createUnknown, isUnknown, bool, raise = "unknown", "xxx", E2Lib.createUnknown, E2Lib.isUnknown, E2Lib.bool, E2Lib.raiseException
 
 -- This is a special type (for advanced users only).
 -- Sole purpose of bypassing type checker and being able to pass table's values directly when doing stringcalls.
@@ -17,7 +17,7 @@ registerType("unknown", "xxx", nil,
 	end
 )
 
-__e2setcost(3)
+__e2setcost(2)
 
 --- XXX = XXX
 registerOperator("ass", UNKNOWN_TYPEID, UNKNOWN_TYPEID, function(self, args)
@@ -32,17 +32,17 @@ __e2setcost(1)
 
 --- if (unknown)
 e2function number operator_is(unknown xxx)
-	return isUnknown(xxx) and 1 or 0
+	return bool(isUnknown(xxx))
 end
 
 --- XXX == XXX
 e2function number operator==(unknown lhs, unknown rhs)
-	return lhs == rhs and 1 or 0
+	return bool(lhs == rhs)
 end
 
 --- XXX != XXX
 e2function number operator!=(unknown lhs, unknown rhs)
-	return lhs ~= rhs and 1 or 0
+	return bool(lhs ~= rhs)
 end
 
 __e2setcost(5)
@@ -57,6 +57,43 @@ e2function unknown table:operator[](string key)
 	local typeid = this.stypes[key]
 	if typeid == nil then return nil end
 	return createUnknown(typeid, this.s[key])
+end
+
+e2function unknown table:operator[](unknown xxx)
+	if not isUnknown(xxx) then return nil end
+	local typeid, value = xxx[1], xxx[2]
+	if typeid == nil then return nil end
+	if isnumber(value) then
+		typeid = this.ntypes[value]
+		if typeid == nil then return nil end
+		return createUnknown(typeid, this.n[value])
+	end
+	if isstring(value) then
+		typeid = this.stypes[value]
+		if typeid == nil then return nil end
+		return createUnknown(typeid, this.s[value])
+	end
+	error("'unknown' key must be either of type string or number, got " .. E2Lib.typeName(typeid))
+end
+
+e2function void table:operator[](unknown xxxKey, unknown xxxValue)
+	assert(isUnknown(xxxKey), "'unknown' key is invalid")
+	local keyTypeid, keyValue = xxxKey[1], xxxKey[2]
+	assert(keyTypeid == "s" or keyTypeid == "n", "'unknown' key must be either of type string or number, got " .. E2Lib.typeName(keyTypeid))
+	print("keyTypeid:", keyTypeid, "keyValue:", keyValue) -- REMOVEME
+	local valueTypeid, valueValue
+	if isUnknown(xxxValue) then
+		valueTypeid, valueValue = xxxValue[1], xxxValue[2]
+		assert(valueTypeid ~= "xgt", "unsupported operation, 'unknown' value type is gtable which is restricted as table value")
+		print("valueTypeid:", valueTypeid, "valueValue:", valueValue) -- REMOVEME
+	else
+		-- Do nothing; This will remove/unset the key from table
+	end
+	if isnumber(keyValue) then -- numeric index
+		this.n[keyValue], this.ntypes[keyValue] = valueValue, valueTypeid
+	else --if isstring(keyValue) then -- string key
+		this.s[keyValue], this.stypes[keyValue] = valueValue, valueTypeid
+	end
 end
 
 __e2setcost(1)
@@ -91,6 +128,18 @@ registerCallback("postinit", function()
 	__e2setcost(5)
 	for typeName, e2type in next, wire_expression_types do
 		local typeid = e2type[1]
+
+		--- XXX = <Value>
+		--[[
+		registerOperator("ass", typeid, UNKNOWN_TYPEID, function(self, args)
+			local lhs, op2, scope = args[2], args[3], args[4]
+			local      rhs = createUnknown(typeid, op2[1](self, op2))
+			self.Scopes[scope][lhs] = rhs
+			self.Scopes[scope].vclk[lhs] = true
+			return rhs
+		end)
+		]]
+
 		if typeid == UNKNOWN_TYPEID then continue end
 
 		-- XXX = unknown(<Value>)
@@ -106,7 +155,7 @@ registerCallback("postinit", function()
 		registerFunction(name, UNKNOWN_TYPEID .. ":", typeid, function(self, args)
 			local op1 = args[2]
 			local xxx = op1[1](self, op1)
-			return xxx[1] == typeid and xxx[2] or fixDefault(defaultValue) -- Type check
+			return isUnknown(xxx) and xxx[1] == typeid and xxx[2] or fixDefault(defaultValue) -- Type check
 		end)
 	end
 end)

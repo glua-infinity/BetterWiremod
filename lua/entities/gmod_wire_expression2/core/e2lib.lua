@@ -74,16 +74,24 @@ end
 
 -- Returns a fixed type-name ("normal" will return "number").
 local string_lower = string.lower
-function E2Lib.fixNormal(typeName)
+local function fixNormal(typeName)
 	typeName = string_lower(typeName)
 	if typeName == "normal" then return "number" end
 	return typeName
 end
+E2Lib.fixNormal = fixNormal
 
 -- Returns a string with the first character uppercased (optionally lowercasing the rest).
 local string_upper, string_sub = string.upper, string.sub
 function E2Lib.upperFirst(str, lowercaseRest)
 	return string_upper(string_sub(str, 1, 1)) .. string_sub(lowercaseRest and string_lower(str) or str, 2)
+end
+
+-- Returns 1 for truthy value; otherwise, 0.
+function E2Lib.bool(value)
+	if isbool(value) then return value and 1 or 0 end
+	if isnumber(value) then return value ~= 0 end
+	return value ~= nil
 end
 
 -- getHash
@@ -114,15 +122,11 @@ end
 
 -- -------------------------- signature generation -----------------------------
 
+-- Returns lowercase type-name from the given typeid.
 function E2Lib.typeName(typeid)
-	if typeid == "" then return "void" end
-	if typeid == "n" then return "number" end
-
-	local tp = wire_expression_types2[typeid]
-	if not tp then error("Type ID '" .. typeid .. "' not found", 2) end
-
-	local typename = tp[1]:lower()
-	return typename or "unknown"
+	local e2type = wire_expression_types2[typeid]
+	if not e2type then error("Type ID '" .. typeid .. "' not found", 2) end
+	return fixNormal(e2type[1] or "void")
 end
 
 function E2Lib.splitType(args)
