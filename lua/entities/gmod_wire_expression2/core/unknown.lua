@@ -12,10 +12,17 @@ registerType("unknown", "xxx", nil,
 	function(v)
 		-- If typecheck returns true, the type is wrong.
 		-- So, we allow every value to 'downcast' to unknown by returning false... actually not really since we bypass typecheck.
-		print("************* typeof v:", type(v)) -- REMOVEME
+		E2Lib.debugPrint("************* typeof v:", type(v))
 		return not isUnknown(v)
 	end
 )
+
+local function ThrowError(self, condition, message)
+	condition = bool(condition)
+	if condition ~= 0 or condition == true then return end
+	raise(message, 3, self.trace)
+	--self:throw(message)
+end
 
 __e2setcost(2)
 
@@ -73,19 +80,19 @@ e2function unknown table:operator[](unknown xxx)
 		if typeid == nil then return nil end
 		return createUnknown(typeid, this.s[value])
 	end
-	error("'unknown' key must be either of type string or number, got " .. E2Lib.typeName(typeid))
+	ThrowError(self, false, "'unknown' key must be either of type string or number, got " .. E2Lib.typeName(typeid))
 end
 
 e2function void table:operator[](unknown xxxKey, unknown xxxValue)
-	assert(isUnknown(xxxKey), "'unknown' key is invalid")
+	ThrowError(self, isUnknown(xxxKey), "'unknown' key is invalid")
 	local keyTypeid, keyValue = xxxKey[1], xxxKey[2]
-	assert(keyTypeid == "s" or keyTypeid == "n", "'unknown' key must be either of type string or number, got " .. E2Lib.typeName(keyTypeid))
-	print("keyTypeid:", keyTypeid, "keyValue:", keyValue) -- REMOVEME
+	ThrowError(self, keyTypeid == "s" or keyTypeid == "n", "'unknown' key must be either of type string or number, got " .. E2Lib.typeName(keyTypeid))
+	E2Lib.debugPrint("keyTypeid:", keyTypeid, "keyValue:", keyValue)
 	local valueTypeid, valueValue
 	if isUnknown(xxxValue) then
 		valueTypeid, valueValue = xxxValue[1], xxxValue[2]
-		assert(valueTypeid ~= "xgt", "unsupported operation, 'unknown' value type is gtable which is restricted as table value")
-		print("valueTypeid:", valueTypeid, "valueValue:", valueValue) -- REMOVEME
+		ThrowError(self, valueTypeid ~= "xgt", "unsupported operation, 'unknown' value type is gtable which is restricted as table value")
+		E2Lib.debugPrint("valueTypeid:", valueTypeid, "valueValue:", valueValue)
 	else
 		-- Do nothing; This will remove/unset the key from table
 	end

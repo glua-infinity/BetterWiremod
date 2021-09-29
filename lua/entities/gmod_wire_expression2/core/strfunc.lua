@@ -78,9 +78,9 @@ registerOperator( "stringcall", "", "", function(self, args)
 	local op1, funcargs, typeids, typeids_str, returntype = args[2], args[3], args[4], args[5], args[6]
 	local funcname = op1[1](self,op1)
 
-	print("[ stringcall ]:")
-	print("      ******* funcargs:") PrintTable(funcargs) -- REMOVEME
-	print("      ******* typeids:") PrintTable(typeids) -- REMOVEME
+	E2Lib.debugPrint("[ stringcall ]:")
+	E2Lib.debugPrint("      ******* funcargs:") E2Lib.debugPrint(funcargs)
+	E2Lib.debugPrint("      ******* typeids:") E2Lib.debugPrint(typeids)
 	local argn = 2
 	for key, value in next, typeids do
 		if value == "xxx" then -- resolve 'unknown' value
@@ -92,17 +92,17 @@ registerOperator( "stringcall", "", "", function(self, args)
 			else
 				error("unsupported 'unknown' typing")
 			end
-			print("**************** target typeid: " .. targetTypeID .. "  target value: " .. tostring(targetValue))
-			print("**************** arg BEFORE:") PrintTable(arg) -- REMOVEME
-			print("**************** typeid BEFORE: " .. typeids[key])
+			E2Lib.debugPrint("**************** target typeid: " .. targetTypeID .. "  target value: " .. tostring(targetValue))
+			E2Lib.debugPrint("**************** arg BEFORE:") E2Lib.debugPrint(arg)
+			E2Lib.debugPrint("**************** typeid BEFORE: " .. typeids[key])
 			typeids[key], arg.TraceName, arg[1], arg[2], arg[3] = targetTypeID, "LITERAL", function() return targetValue end
-			print("**************** typeid AFTER: " .. typeids[key])
-			print("**************** arg AFTER:") PrintTable(arg) -- REMOVEME
+			E2Lib.debugPrint("**************** typeid AFTER: " .. typeids[key])
+			E2Lib.debugPrint("**************** arg AFTER:") E2Lib.debugPrint(arg)
 		end
 		argn = argn + 1
 	end
 	typeids_str = table.concat(typeids)
-	print("************* typeids_str: " .. typeids_str) -- REMOVEME
+	E2Lib.debugPrint("************* typeids_str: " .. typeids_str)
 	local func, func_return_type = findFunc( self, funcname, typeids, typeids_str )
 
 	if not func then E2Lib.raiseException( "No such function: " .. funcname .. "(" .. tps_pretty( typeids_str ) .. ")", 0 ) end

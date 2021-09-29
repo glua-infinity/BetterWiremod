@@ -1198,8 +1198,8 @@ registerCallback( "postinit", function()
 		if isIteratingOverUnknown then continue end -- TODO/FIXME: Skip; This currently has a weird bug, will fix later...
 
 		local function table_foreach(self, args, stringMode)
-			print("[ foreach ]:")
-			print("     ***** isIteratingOverUnknown:", isIteratingOverUnknown) -- REMOVEME
+			E2Lib.debugPrint("[ foreach ]:")
+			E2Lib.debugPrint("     ***** isIteratingOverUnknown:", isIteratingOverUnknown)
 			local keyname, valname = args[2], args[3]
 
 			local tbl = args[4]
@@ -1220,9 +1220,9 @@ registerCallback( "postinit", function()
 
 					self.Scope[keyname] = key
 					self.Scope[valname] = isIteratingOverUnknown and createUnknown(valueTypeID, value) or value
-					print("     ***** key:", self.Scope[keyname]) -- REMOVEME
-					print("     ***** value:", self.Scope[valname]) -- REMOVEME
-					--print("     ***** value typeid:", valueTypeID) -- REMOVEME
+					E2Lib.debugPrint("     ***** key:", self.Scope[keyname])
+					E2Lib.debugPrint("     ***** value:", self.Scope[valname])
+					--E2Lib.debugPrint("     ***** value typeid:", valueTypeID)
 
 					--if isIteratingOverUnknown then types[key] = "xxx" end
 					local ok, msg = pcall(statement[1], self, statement)

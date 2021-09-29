@@ -8,6 +8,16 @@ local function checkargtype(argn, value, argtype)
 end
 
 -- -------------------------- Helper functions -----------------------------
+local e2_debugprint = CreateConVar("e2_debugprint", "0", FCVAR_ARCHIVE, "Control whether (E2) debug prints are enabled", 0, 1)
+function E2Lib.debugPrint(...)
+	if not e2_debugprint:GetBool() then return end
+	if select("#", ...) == 1 and istable(select(1, ...)) then
+		PrintTable((select(1, ...)))
+	else
+		print(...)
+	end
+end
+
 local unpack = unpack
 local IsValid = IsValid
 
@@ -53,7 +63,7 @@ E2Lib.isUnknown = isUnknown
 -- Returns a new 'unknown' value handle (or returns the existing one if value is already of type 'unknown').
 function E2Lib.createUnknown(typeid, value)
 	assert(isstring(typeid) and #typeid > 0 and wire_expression_types2[typeid], string.format("bad argument #1 to 'createUnknown' (string expected, got %s)", type(typeid)))
-	print('**** [createUnknown] typeid: ' .. typeid .. "  value: " .. tostring(value)) -- REMOVEME
+	E2Lib.debugPrint('**** [createUnknown] typeid: ' .. typeid .. "  value: " .. tostring(value))
 	if isUnknown(value) then
 		assert(typeid == "xxx", "attempted to createUnknown from existing 'unknown', but typeid mismatch: " .. typeid)
 		return value
