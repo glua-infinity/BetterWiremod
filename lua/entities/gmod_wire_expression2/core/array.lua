@@ -354,10 +354,23 @@ end
 
 --------------------------------------------------------------------------------
 -- Count
--- Returns the number of entries in the array
+-- Returns the total amount of entries in the array
+--------------------------------------------------------------------------------
+__e2setcost(1)
+local table_Count = table.Count
+e2function number array:count()
+	local count = table_Count(this)
+	self.prf = self.prf + count / 3
+	return count
+end
+
+--------------------------------------------------------------------------------
+-- Length
+-- Returns the computed length of the array (using # Lua operator)
+-- Warning: This will return a different result than array:count() in case an array is not sequential
 --------------------------------------------------------------------------------
 __e2setcost(3)
-e2function number array:count()
+e2function number array:length()
 	return #this
 end
 
