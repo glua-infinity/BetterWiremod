@@ -49,6 +49,7 @@ local META_UNKNOWN = newproxy()
 local function isUnknown(value)
 	return istable(value) and getmetatable(value) == META_UNKNOWN
 end
+E2Lib.isUnknown = isUnknown
 -- Returns a new 'unknown' value handle (or returns the existing one if value is already of type 'unknown').
 function E2Lib.createUnknown(typeid, value)
 	assert(isstring(typeid) and #typeid > 0 and wire_expression_types2[typeid], string.format("bad argument #1 to 'createUnknown' (string expected, got %s)", type(typeid)))
