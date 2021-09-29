@@ -155,12 +155,6 @@ registerCallback( "postinit", function()
 				return getter( self, array, index )
 			end)
 
-			registerFunction( name, "r:n", id, function(self,args)
-				local op1, op2 = args[2], args[3]
-				local array, index = op1[1](self,op1), op2[1](self,op2)
-				return getter( self, array, index )
-			end)
-
 			--------------------------------------------------------------------------------
 			-- Set functions
 			-- R[N,type] = value, and R:set<type>(N,value)
@@ -184,14 +178,6 @@ registerCallback( "postinit", function()
 				local array, index, value = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
 				return setter( self, array, index, value )
 			end)
-
-			registerFunction("set" .. nameupperfirst, "r:n"..id, id, function(self,args)
-				local op1, op2, op3 = args[2], args[3], args[4]
-				local array, index, value = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
-				return setter( self, array, index, value )
-			end)
-
-
 			--------------------------------------------------------------------------------
 			-- Push functions
 			-- Inserts the value at the end of the array

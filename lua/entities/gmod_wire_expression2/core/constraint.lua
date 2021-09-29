@@ -179,18 +179,6 @@ end
 --******************************************************************************
 __e2setcost(20)
 
---- Returns an '''array''' containing all entities directly or indirectly constrained to <this>, except <this> itself.
-e2function array entity:getConstraints()
-	if not IsValid(this) then return {} end
-	if not constraint.HasConstraints(this) then return {} end
-
-	local result = getConnectedEntities(this)
-	table.remove(result,1) -- <this> is always in the first position
-	self.prf = self.prf + #result * 30
-
-	return result
-end
-
 --[[
 	Returns an '''array''' constaining all entities directly or indirectly connected to <this>
 	supports filtering, see buildFilter above

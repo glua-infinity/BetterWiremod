@@ -383,24 +383,10 @@ end
 
 __e2setcost(5) -- temporary
 
-e2function number wirelink:writeCell(address, value)
-	if not validWirelink(self, this) then return 0 end
-
-	if not this.WriteCell then return 0 end
-	if this:WriteCell(address, value) then return 1 else return 0 end
-end
-
-e2function number wirelink:readCell(address)
-	if not validWirelink(self, this) then return 0 end
-
-	if not this.ReadCell then return 0 end
-	return this:ReadCell(address) or 0
-end
-
 e2function array wirelink:readArray(start, size)
 	if size < 0 then return {} end
 	if !validWirelink(self, this) or !this.ReadCell then return {} end
-	
+
 	self.prf = self.prf + size
 
 	local ret = {}

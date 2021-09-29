@@ -18,8 +18,6 @@ timer.Simple(0.1, function()
 		E2Helper.Descriptions["unshift"..name.."(t:"..typeid..")"] = "Adds the data to the beginning of the table. Will move all other entries up one step to compensate"
 		-- arrays
 		E2Helper.Descriptions["insert"..name.."(r:n"..typeid..")"] = "Inserts the variable at the specified position. Moves all other indexes up one step to compensate"
-		E2Helper.Descriptions["set"..name.."(r:n"..typeid..")"] = "Sets a variable at specified index. Deprecated, use R[N,"..type.."] = X instead"
-		E2Helper.Descriptions[type.."(r:n)"] = "Returns the "..type.." stored in the array under specified index. Deprecated, use R[N,"..type.."] instead"
 		E2Helper.Descriptions["pop"..name.."(r:)"] = "Deletes and returns the last entry in the array. Be sure not to use popNumber() on a vector or similar, as the data may be lost"
 		E2Helper.Descriptions["push"..name.."(r:"..typeid..")"] = "Saves the data at the end of the array"
 		E2Helper.Descriptions["unshift"..name.."(r:"..typeid..")"] = "Adds the data to the beginning of the array. Will move all other entries up one address"
@@ -35,9 +33,6 @@ timer.Simple(0.1, function()
 		E2Helper.Descriptions["select(n"..typeid.."...)"] = "Returns the Nth value given after the index, "..type.."'s zero element otherwise. If you mix types, the behaviour is undefined"
 		-- datasignals
 		E2Helper.Descriptions["dsGet"..name.."()"] = "Returns the received "..type
-		-- wirelink
-		E2Helper.Descriptions[type.."(xwl:s)"] = "Returns the "..type.." from the specified address of linked component. Deprecated, use XWL[S,"..type.."] instead"
-		E2Helper.Descriptions["set"..name.."(xwl:s"..typeid..")"] = "Sets the component's input of the specified name equal to specified "..type..". Deprecated, use XWL[S,"..type.."] = X instead"
 	end
 end)
 
@@ -699,8 +694,6 @@ E2Helper.Descriptions["writeUnicodeString(xwl:snnvnn)"] = "Same as XWL:writeUnic
 E2Helper.Descriptions["writeUnicodeString(xwl:snnnv)"] = "Same as XWL:writeUnicodeString(snnn), with an extra argument for background colour"
 E2Helper.Descriptions["writeUnicodeString(xwl:snnnvn)"] = "Same as XWL:writeUnicodeString(snnnv), with an extra argument for flashing text. 0 or 1 is recommended"
 E2Helper.Descriptions["readArray(xwl:nn)"] = "Reads an array's elements from a piece of memory. Strings and sub-tables (angles, vectors, matrices) are written as pointers to the actual data. Strings are written null-terminated"
-E2Helper.Descriptions["writeCell(xwl:nn)"] = "Writes value into specified memory cell. Deprecated, use XWL[N] = X instead"
-E2Helper.Descriptions["readCell(xwl:n)"] = "Returns contents of the specified memory cell. Deprecated, use XWL[N] instead"
 E2Helper.Descriptions["readString(xwl:n)"] = "Reads a null-terminated string from the given address. Returns an empty string on failure"
 E2Helper.Descriptions["writeArray(xwl:nr)"] = "Writes an array's elements into a piece of memory. Strings and sub-tables (angles, vectors, matrices) are written as pointers to the actual data. Strings are written null-terminated"
 E2Helper.Descriptions["writeTable(xwl:nt)"] = "Same as writeArray, except it uses the numerically indexed variables of the table instead"
@@ -904,7 +897,6 @@ E2Helper.Descriptions["maxFrictionMass()"] = "Returns how much friction influenc
 E2Helper.Descriptions["minFrictionMass()"] = "Returns how much friction influences props throughout the server"
 
 -- Constraints
-E2Helper.Descriptions["getConstraints(e:)"] = "Returns an array with all entities directly or indirectly constrained to E, except E itself. Deprecated, use E:getConnectedEntities(...) instead."
 E2Helper.Descriptions["getConnectedEntities(e:...)"] = "Returns an array with all entities directly or indirectly constrained or parented to E, including E itself."
 E2Helper.Descriptions["getConnectedEntities(e:r)"] = "Returns an array with all entities directly or indirectly constrained or parented to E, including E itself."
 E2Helper.Descriptions["hasConstraints(e:)"] = "Returns the number of the constraints E has"
