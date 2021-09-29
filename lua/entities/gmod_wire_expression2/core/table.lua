@@ -1143,7 +1143,7 @@ registerCallback( "postinit", function()
 		__e2setcost(10)
 
 		-- Push a variable into the table (into the array part)
-		registerFunction( "push"..name,"t:"..id,"",function(self,args)
+		registerFunction( "push","t:"..id,"",function(self,args)
 			local op1, op2 = args[2], args[3]
 			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 			if rv2 == nil then return end
@@ -1161,7 +1161,7 @@ registerCallback( "postinit", function()
 			return removefunc(self, rv1, #rv1.n, true)
 		end)
 
-		registerFunction( "insert"..name,"t:n"..id,"",function(self,args)
+		registerFunction( "insert","t:n"..id,"",function(self,args)
 			local op1, op2, op3 = args[2], args[3], args[4]
 			local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self,op3)
 			if rv3 == nil then return end
@@ -1174,7 +1174,7 @@ registerCallback( "postinit", function()
 			return rv3
 		end)
 
-		registerFunction( "unshift"..name,"t:"..id,"",function(self,args)
+		registerFunction( "unshift","t:"..id,"",function(self,args)
 			local op1, op2 = args[2], args[3]
 			local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 			if rv2 == nil then return end

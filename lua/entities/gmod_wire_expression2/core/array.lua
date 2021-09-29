@@ -198,7 +198,7 @@ registerCallback( "postinit", function()
 			--------------------------------------------------------------------------------
 			__e2setcost(7)
 
-			registerFunction( "push" .. nameupperfirst, "r:" .. id, id, function(self,args)
+			registerFunction( "push", "r:" .. id, id, function(self,args)
 				local op1, op2 = args[2], args[3]
 				local array, value = op1[1](self,op1), op2[1](self,op2)
 				return setter( self, array, #array + 1, value )
@@ -208,7 +208,7 @@ registerCallback( "postinit", function()
 			-- Insert functions
 			-- Inserts the value at the specified index. Subsequent values are moved up to compensate.
 			--------------------------------------------------------------------------------
-			registerFunction( "insert" .. nameupperfirst, "r:n" .. id, id, function( self, args )
+			registerFunction( "insert", "r:n" .. id, id, function( self, args )
 				local op1, op2, op3 = args[2], args[3], args[4]
 				local array, index, value = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
 				return setter( self, array, index, value, true )
@@ -229,7 +229,7 @@ registerCallback( "postinit", function()
 			-- Unshift functions
 			-- Inserts the value at the beginning of the array. Subsequent values are moved up to compensate.
 			--------------------------------------------------------------------------------
-			registerFunction( "unshift" .. nameupperfirst, "r:" .. id, id, function(self,args)
+			registerFunction( "unshift", "r:" .. id, id, function(self,args)
 				local op1, op2 = args[2], args[3]
 				local array, value = op1[1](self,op1), op2[1](self,op2)
 				return setter( self, array, 1, value, true )

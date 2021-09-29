@@ -10,19 +10,19 @@ timer.Simple(0.1, function()
 		type = name:lower()
 		typeid = v[1]
 		-- tables
-		E2Helper.Descriptions["insert"..name.."(t:n"..typeid..")"] = "Inserts the variable at the specified position. Moves all other indexes up one step to compensate"
+		E2Helper.Descriptions["insert(t:n"..typeid..")"] = "Inserts the variable at the specified position. Moves all other indexes up one step to compensate"
 		E2Helper.Descriptions["remove"..name.."(t:n)"] = "Removes the variable at the specified numerical index, with the specified type, and returns it. All sequential keys will be moved down to fill the gap"
 		E2Helper.Descriptions["remove"..name.."(t:s)"] = "Removes the variable at the specified string index, with the specified type, and returns it"
 		E2Helper.Descriptions["pop"..name.."(t:)"] = "Removes and returns the last variable"
-		E2Helper.Descriptions["push"..name.."(t:"..typeid..")"] = "Adds the variable to the end of the table"
-		E2Helper.Descriptions["unshift"..name.."(t:"..typeid..")"] = "Adds the data to the beginning of the table. Will move all other entries up one step to compensate"
+		E2Helper.Descriptions["push(t:"..typeid..")"] = "Adds the variable to the end of the table"
+		E2Helper.Descriptions["unshift(t:"..typeid..")"] = "Adds the data to the beginning of the table. Will move all other entries up one step to compensate"
 		-- arrays
-		E2Helper.Descriptions["insert"..name.."(r:n"..typeid..")"] = "Inserts the variable at the specified position. Moves all other indexes up one step to compensate"
+		E2Helper.Descriptions["insert(r:n"..typeid..")"] = "Inserts the variable at the specified position. Moves all other indexes up one step to compensate"
 		E2Helper.Descriptions["set"..name.."(r:n"..typeid..")"] = "Sets a variable at specified index. Deprecated, use R[N,"..type.."] = X instead"
 		E2Helper.Descriptions[type.."(r:n)"] = "Returns the "..type.." stored in the array under specified index. Deprecated, use R[N,"..type.."] instead"
 		E2Helper.Descriptions["pop"..name.."(r:)"] = "Deletes and returns the last entry in the array. Be sure not to use popNumber() on a vector or similar, as the data may be lost"
-		E2Helper.Descriptions["push"..name.."(r:"..typeid..")"] = "Saves the data at the end of the array"
-		E2Helper.Descriptions["unshift"..name.."(r:"..typeid..")"] = "Adds the data to the beginning of the array. Will move all other entries up one address"
+		E2Helper.Descriptions["push(r:"..typeid..")"] = "Saves the data at the end of the array"
+		E2Helper.Descriptions["unshift(r:"..typeid..")"] = "Adds the data to the beginning of the array. Will move all other entries up one address"
 		E2Helper.Descriptions["shift"..name.."(r:)"] = "Deletes and returns the first element of the array, moving other entries down one address to compensate"
 		E2Helper.Descriptions["remove"..name.."(r:n)"] = "Deletes and returns the specified entry, moving subsequent entries down to compensate"
 		-- gvars
