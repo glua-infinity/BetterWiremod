@@ -58,7 +58,7 @@ function E2Lib.createUnknown(typeid, value)
 		return value
 	end
 	return setmetatable({}, {
-		__index = { typeid, value }; -- setmetatable({ typeid, value }, { __mode="v" }); -- TODO/FIXME: Use weak value table.
+		__index = setmetatable({ typeid, value }, { __mode="v" });
 		__newindex = function() error("cannot change state of immutable 'unknown'") end;
 		__metatable = META_UNKNOWN;
 	})
