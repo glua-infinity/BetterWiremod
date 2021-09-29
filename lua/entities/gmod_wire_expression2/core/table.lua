@@ -937,10 +937,6 @@ end
 
 __e2setcost(5)
 
---------------------------------------------------------------------------------
--- Backwards compatibility functions (invert & co.)
---------------------------------------------------------------------------------
-
 --- Returns a lookup table for <arr>. Usage: Index = T:number(toString(Value)).
 --- Don't overuse this function, as it can become expensive for arrays with > 10 entries!
 e2function table invert(array arr)
