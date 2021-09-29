@@ -1195,6 +1195,8 @@ registerCallback( "postinit", function()
 		__e2setcost(nil)
 
 		local isIteratingOverUnknown = id == "xxx"
+		if isIteratingOverUnknown then continue end -- TODO/FIXME: Skip; This currently has a weird bug, will fix later...
+
 		local function table_foreach(self, args, stringMode)
 			print("[ foreach ]:")
 			print("     ***** isIteratingOverUnknown:", isIteratingOverUnknown) -- REMOVEME
