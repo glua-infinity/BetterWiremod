@@ -71,6 +71,19 @@ e2function string unknown:typeid()
 	return this and this[1] or ""
 end
 
+__e2setcost(3)
+
+--- Determines whether internal value is valid according to internal typeid type-check.
+e2function number unknown:isValid()
+	if not isUnknown(this) then return 0 end
+	local typeid, value = this[1], this[2]
+	local e2type = wire_expression_types2[typeid]
+	if e2type[6] then
+		return e2type[6](value) and 0 or 1
+	end
+	return 0
+end
+
 registerCallback("postinit", function()
 	local fixDefault, fixNormal = E2Lib.fixDefault, E2Lib.fixNormal
 	local skip_types = {
