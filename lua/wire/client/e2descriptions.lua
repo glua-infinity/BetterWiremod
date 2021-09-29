@@ -28,13 +28,6 @@ timer.Simple(0.1, function()
 		-- gvars
 		E2Helper.Descriptions["gRemoveAll"..name.."s()"] = "Removes all variables of the "..type.." type in your non-shared table"
 		E2Helper.Descriptions["gRemoveAll"..name.."s(s)"] = "Removes all variables of the "..type.." type in your non-shared table in group S"
-		E2Helper.Descriptions["gDeleteAll"..short.."()"] = "Exactly the same as gRemoveAll"..name.."s(S) (Except it removes in the group set by gSetGroup instead of using the group as an argument)"
-		E2Helper.Descriptions["gDelete"..short.."(s)"] = "Removes and returns the variable of the "..type.." type at the index S in the current group"
-		E2Helper.Descriptions["gDelete"..short.."(n)"] = "Exactly the same as gDelete"..short.."(N:toString())"
-		E2Helper.Descriptions["gGet"..short.."(s)"] = "Gets a variable of the "..type.." type from index S in the current group"
-		E2Helper.Descriptions["gGet"..short.."(n)"] = "Exactly the same as gGet"..short.."(N:toString())"
-		E2Helper.Descriptions["gSet"..short.."(s"..typeid..")"] = "Sets a variable of the "..type.." type at index S in the current group"
-		E2Helper.Descriptions["gSet"..short.."(n"..typeid..")"] = "Exactly the same as gSet"..short.."(N:toString(),"..type..")"
 		E2Helper.Descriptions["remove"..name.."(xgt:s)"] = "Removes and returns the variable of the "..type.." type at the index S"
 		-- self-aware
 		E2Helper.Descriptions["ioGetInput"..name.."(s)"] = "Get the value of the input S of the E2"
@@ -1251,11 +1244,6 @@ E2Helper.Descriptions["gTableSafe(n)"] = "Returns a safe gTable which group is a
 E2Helper.Descriptions["gRemoveAll()"] = "Removes all non-shared variables and group tables you have created"
 E2Helper.Descriptions["clear(xgt:)"] = "Clears the gTable"
 E2Helper.Descriptions["count(xgt:)"] = "Returns the number of entries in the gTable. Does not add the entries in subtables"
-E2Helper.Descriptions["gGetGroup()"] = "Gets the E2's current group"
-E2Helper.Descriptions["gSetGroup(s)"] = "Sets the E2's current group. Does persist"
-E2Helper.Descriptions["gGetShare()"] = "Returns 1/0"
-E2Helper.Descriptions["gResetGroup()"] = "Resets the group back to \"default\""
-E2Helper.Descriptions["gShare(n)"] = "Sets wether or not you want to share the variables. (1/0) Remember that there are two tables for each group: one which is shared and one which is not; values do not transition between the two"
 E2Helper.Descriptions["toTable(xgt:)"] = "Converts the GTable into a table"
 
 -- tables

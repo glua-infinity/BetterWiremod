@@ -151,11 +151,6 @@ e2function void print(...)
 	end
 end
 
---- Posts <text> to the chat area. (deprecated due to print(...))
---e2 function void print(string text)
---	self.player:ChatPrint(text)
---end
-
 --- Posts a string to the chat of <this>'s driver. Returns 1 if the text was printed, 0 if not.
 e2function number entity:printDriver(string text)
 	if not checkVehicle(self, this) then return 0 end
