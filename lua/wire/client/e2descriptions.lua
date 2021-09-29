@@ -2,13 +2,13 @@ if not E2Helper then return end
 
 local name, short, type, typeid
 timer.Simple(0.1, function()
-	for k, v in pairs( wire_expression_types ) do
-		if k == "NORMAL" then k = "NUMBER" end
-
-		name = k:sub(1,1) .. k:sub(2):lower()
-		short = name:Left(3)
-		type = name:lower()
-		typeid = v[1]
+	local fixNormal, string_sub, string_lower = E2Lib.fixNormal, string.sub, string.lower
+	for typeName, e2type in next, wire_expression_types do
+		name = fixNormal(typeName, true)
+		short, type, typeid = string_sub(name, 1, 3), string_lower(name), e2type[1]
+		-- unknown
+		E2Helper.Descriptions["unknown("..typeid..")"] = "Creates a new 'unknown' handle from the given "..type.." value"
+		E2Helper.Descriptions[type.."(xxx:)"] = "Returns internal value as "..type
 		-- tables
 		E2Helper.Descriptions["insert"..name.."(t:n"..typeid..")"] = "Inserts the variable at the specified position. Moves all other indexes up one step to compensate"
 		E2Helper.Descriptions["remove"..name.."(t:n)"] = "Removes the variable at the specified numerical index, with the specified type, and returns it. All sequential keys will be moved down to fill the gap"
@@ -47,6 +47,11 @@ timer.Simple(0.1, function()
 		E2Helper.Descriptions["set"..name.."(xwl:s"..typeid..")"] = "Sets the component's input of the specified name equal to specified "..type..". Deprecated, use XWL[S,"..type.."] = X instead"
 	end
 end)
+
+-- Unknown
+E2Helper.Descriptions["nounknown()"] = "Returns invalid/default (unknown) value"
+E2Helper.Descriptions["typeid(xxx:)"] = "Retrieves internal value's typeid"
+E2Helper.Descriptions["isValid(xxx:)"] = "Determines whether internal value is valid according to internal typeid type-check"
 
 -- Number
 E2Helper.Descriptions["finite(n)"] = "Returns 1 if given value is a finite number; otherwise 0."
