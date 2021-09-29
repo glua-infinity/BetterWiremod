@@ -44,11 +44,45 @@ function E2Lib.newE2Table()
 	return {n={},ntypes={},s={},stypes={},size=0}
 end
 
+local META_UNKNOWN = newproxy()
+-- Determines whether the given value is of type 'unknown'.
+local function isUnknown(value)
+	return istable(value) and getmetatable(value) == META_UNKNOWN
+end
+-- Returns a new 'unknown' value handle (or returns the existing one if value is already of type 'unknown').
+function E2Lib.createUnknown(typeid, value)
+	assert(isstring(typeid) and #typeid > 0 and wire_expression_types2[typeid], string.format("bad argument #1 to 'createUnknown' (string expected, got %s)", type(typeid)))
+	print('**** [createUnknown] typeid: ' .. typeid .. "  value: " .. tostring(value)) -- REMOVEME
+	if isUnknown(value) then
+		assert(typeid == "xxx", "attempted to createUnknown from existing 'unknown', but typeid mismatch: " .. typeid)
+		return value
+	end
+	return setmetatable({}, {
+		__index = { typeid, value }; -- setmetatable({ typeid, value }, { __mode="v" }); -- TODO/FIXME: Use weak value table.
+		__newindex = function() error("cannot change state of immutable 'unknown'") end;
+		__metatable = META_UNKNOWN;
+	})
+end
+
 -- Returns a cloned table of the variable given if it is a table.
 local istable = istable
 local table_Copy = table.Copy
 function E2Lib.fixDefault(var)
 	return istable(var) and table_Copy(var) or var
+end
+
+-- Returns a fixed type-name ("normal" will return "number").
+local string_lower = string.lower
+function E2Lib.fixNormal(typeName)
+	typeName = string_lower(typeName)
+	if typeName == "normal" then return "number" end
+	return typeName
+end
+
+-- Returns a string with the first character uppercased (optionally lowercasing the rest).
+local string_upper, string_sub = string.upper, string.sub
+function E2Lib.upperFirst(str, lowercaseRest)
+	return string_upper(string_sub(str, 1, 1)) .. string_sub(lowercaseRest and string_lower(str) or str, 2)
 end
 
 -- getHash

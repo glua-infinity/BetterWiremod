@@ -1,8 +1,4 @@
-local function nicename( word )
-	local ret = word:lower()
-	if ret == "normal" then return "number" end
-	return ret
-end
+local nicename = E2Lib.fixNormal
 
 local function checkFuncName( self, funcname )
 	if self.funcs[funcname] then
@@ -82,17 +78,31 @@ registerOperator( "stringcall", "", "", function(self, args)
 	local op1, funcargs, typeids, typeids_str, returntype = args[2], args[3], args[4], args[5], args[6]
 	local funcname = op1[1](self,op1)
 
+	print("[ stringcall ]:")
+	print("      ******* funcargs:") PrintTable(funcargs) -- REMOVEME
+	print("      ******* typeids:") PrintTable(typeids) -- REMOVEME
 	local argn = 2
 	for key, value in next, typeids do
-		if value == "xxx" then
+		if value == "xxx" then -- resolve 'unknown' value
 			local arg = funcargs[argn]
-			assert(arg.TraceName == "GET", "unsupported 'unknown' typing")
-			local targetTypeID, targetValue = unpack(arg[1](self, arg))
+			local targetTypeID, targetValue
+			if arg.TraceName == "GET" or arg.TraceName == "VAR" then
+				local targetTable = arg[1](self, arg)
+				targetTypeID, targetValue = targetTable[1], targetTable[2]
+			else
+				error("unsupported 'unknown' typing")
+			end
+			print("**************** target typeid: " .. targetTypeID .. "  target value: " .. tostring(targetValue))
+			print("**************** arg BEFORE:") PrintTable(arg) -- REMOVEME
+			print("**************** typeid BEFORE: " .. typeids[key])
 			typeids[key], arg.TraceName, arg[1], arg[2], arg[3] = targetTypeID, "LITERAL", function() return targetValue end
+			print("**************** typeid AFTER: " .. typeids[key])
+			print("**************** arg AFTER:") PrintTable(arg) -- REMOVEME
 		end
 		argn = argn + 1
 	end
 	typeids_str = table.concat(typeids)
+	print("************* typeids_str: " .. typeids_str) -- REMOVEME
 	local func, func_return_type = findFunc( self, funcname, typeids, typeids_str )
 
 	if not func then E2Lib.raiseException( "No such function: " .. funcname .. "(" .. tps_pretty( typeids_str ) .. ")", 0 ) end

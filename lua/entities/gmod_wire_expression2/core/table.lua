@@ -1037,7 +1037,7 @@ end
 --------------------------------------------------------------------------------
 
 registerCallback( "postinit", function()
-	local getf, setf
+	local createUnknown = E2Lib.createUnknown
 	for k,v in pairs( wire_expression_types ) do
 		local name = k
 		local id = v[1]
@@ -1061,7 +1061,7 @@ registerCallback( "postinit", function()
 				typeid, value = targetTable.stypes[targetKey], targetTable.s[targetKey]
 			end
 			if id == "xxx" then -- Bypass type checker, custom handling lives at stringcall
-				return {typeid, value}
+				return createUnknown(typeid, value)
 			end
 			if value == nil or typeid ~= id or (v[6] and v[6](value)) then -- Type check
 				return fixDefault(v[2])
@@ -1194,16 +1194,21 @@ registerCallback( "postinit", function()
 		--------------------------------------------------------------------------------
 		__e2setcost(nil)
 
-		registerOperator("fea", "s" .. id .. "t", "", function(self, args)
+		local isIteratingOverUnknown = id == "xxx"
+		local function table_foreach(self, args, stringMode)
+			print("[ foreach ]:")
+			print("     ***** isIteratingOverUnknown:", isIteratingOverUnknown) -- REMOVEME
 			local keyname, valname = args[2], args[3]
 
 			local tbl = args[4]
 			tbl = tbl[1](self, tbl)
 
 			local statement = args[5]
-
-			for key, value in pairs(tbl.s) do
-				if tbl.stypes[key] == id then
+			local types = stringMode and tbl.stypes or tbl.ntypes
+			local targetTable = stringMode and tbl.s or tbl.n
+			for key, value in next, targetTable do
+				local valueTypeID = types[key]
+				if valueTypeID == id or isIteratingOverUnknown then
 					self:PushScope()
 
 					self.prf = self.prf + 3
@@ -1212,50 +1217,31 @@ registerCallback( "postinit", function()
 					self.Scope.vclk[valname] = true
 
 					self.Scope[keyname] = key
-					self.Scope[valname] = value
+					self.Scope[valname] = isIteratingOverUnknown and createUnknown(valueTypeID, value) or value
+					print("     ***** key:", self.Scope[keyname]) -- REMOVEME
+					print("     ***** value:", self.Scope[valname]) -- REMOVEME
+					--print("     ***** value typeid:", valueTypeID) -- REMOVEME
 
+					--if isIteratingOverUnknown then types[key] = "xxx" end
 					local ok, msg = pcall(statement[1], self, statement)
+					--if isIteratingOverUnknown then types[key] = valueTypeID end
 
 					if not ok then
-						if msg == "break" then	self:PopScope() break
+						if msg == "break" then self:PopScope() break
 						elseif msg ~= "continue" then self:PopScope() error(msg, 0) end
 					end
 
 					self:PopScope()
 				end
 			end
+		end
+
+		registerOperator("fea", "s" .. id .. "t", "", function(self, args)
+			table_foreach(self, args, true)
 		end)
 
 		registerOperator("fea", "n" .. id .. "t", "", function(self, args)
-			local keyname, valname = args[2], args[3]
-
-			local tbl = args[4]
-			tbl = tbl[1](self, tbl)
-
-			local statement = args[5]
-
-			for key, value in pairs(tbl.n) do
-				if tbl.ntypes[key] == id then
-					self:PushScope()
-
-					self.prf = self.prf + 3
-
-					self.Scope.vclk[keyname] = true
-					self.Scope.vclk[valname] = true
-
-					self.Scope[keyname] = key
-					self.Scope[valname] = value
-
-					local ok, msg = pcall(statement[1], self, statement)
-
-					if not ok then
-						if msg == "break" then	self:PopScope() break
-						elseif msg ~= "continue" then self:PopScope() error(msg, 0) end
-					end
-
-					self:PopScope()
-				end
-			end
+			table_foreach(self, args)
 		end)
 
 		end -- blocked check end
