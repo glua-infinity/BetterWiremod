@@ -1195,17 +1195,17 @@ registerCallback( "postinit", function()
 		__e2setcost(nil)
 
 		local isIteratingOverUnknown = id == "xxx"
-		if isIteratingOverUnknown then continue end -- TODO/FIXME: Skip; This currently has a weird bug, will fix later...
-
 		local function table_foreach(self, args, stringMode)
-			E2Lib.debugPrint("[ foreach ]:")
-			E2Lib.debugPrint("     ***** isIteratingOverUnknown:", isIteratingOverUnknown)
+			E2Lib.debugPrint("{----- foreach -----}")
+			E2Lib.debugPrint("isIteratingOverUnknown:", isIteratingOverUnknown)
 			local keyname, valname = args[2], args[3]
+			E2Lib.debugPrint("keyname: " .. keyname .. "  valname: " .. valname)
 
 			local tbl = args[4]
 			tbl = tbl[1](self, tbl)
 
 			local statement = args[5]
+			E2Lib.debugPrint("initial statement[4]:") E2Lib.debugPrint(statement[4]) E2Lib.debugPrint()
 			local types = stringMode and tbl.stypes or tbl.ntypes
 			local targetTable = stringMode and tbl.s or tbl.n
 			for key, value in next, targetTable do
@@ -1219,14 +1219,14 @@ registerCallback( "postinit", function()
 					self.Scope.vclk[valname] = true
 
 					self.Scope[keyname] = key
-					self.Scope[valname] = isIteratingOverUnknown and createUnknown(valueTypeID, value) or value
-					E2Lib.debugPrint("     ***** key:", self.Scope[keyname])
-					E2Lib.debugPrint("     ***** value:", self.Scope[valname])
-					--E2Lib.debugPrint("     ***** value typeid:", valueTypeID)
+					local unknownValue = isIteratingOverUnknown and createUnknown(valueTypeID, value) or value
+					self.Scope[valname] = unknownValue
+					E2Lib.debugPrint(" * key   :", self.Scope[keyname])
+					E2Lib.debugPrint(" * typeid:", valueTypeID)
+					E2Lib.debugPrint(" * value :", self.Scope[valname])
 
-					--if isIteratingOverUnknown then types[key] = "xxx" end
 					local ok, msg = pcall(statement[1], self, statement)
-					--if isIteratingOverUnknown then types[key] = valueTypeID end
+					E2Lib.debugPrint("foreach statement[4]:") E2Lib.debugPrint(statement[4]) E2Lib.debugPrint()
 
 					if not ok then
 						if msg == "break" then self:PopScope() break

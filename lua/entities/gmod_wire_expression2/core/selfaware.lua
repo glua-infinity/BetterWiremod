@@ -29,6 +29,16 @@ e2function void selfDestructAll()
 end
 
 /******************************************************************************/
+-- debug print
+
+__e2setcost(1)
+
+--- Debug-print text message to console
+e2function void debugPrint(string text)
+	E2Lib.debugPrint(text)
+end
+
+/******************************************************************************/
 -- i/o functions
 
 __e2setcost(10)

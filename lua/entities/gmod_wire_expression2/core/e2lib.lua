@@ -9,12 +9,32 @@ end
 
 -- -------------------------- Helper functions -----------------------------
 local e2_debugprint = CreateConVar("e2_debugprint", "0", FCVAR_ARCHIVE, "Control whether (E2) debug prints are enabled", 0, 1)
+local tostring, string_Replace, table_concat = tostring, string.Replace, table.concat
+local ioPrinter = function(appendNewline, ...)
+	local t = {...}
+	for k, v in next, t do
+		t[k] = string_Replace(tostring(v), "\t", "   ")
+	end
+	io.write(table_concat(t, "    "))
+	if appendNewline then io.write "\n" end
+end
+local MsgPrinter = function(...) ioPrinter(false, ...) end
 function E2Lib.debugPrint(...)
 	if not e2_debugprint:GetBool() then return end
 	if select("#", ...) == 1 and istable(select(1, ...)) then
-		PrintTable((select(1, ...)))
+		local tbl = select(1, ...)
+		PrintTable(tbl)
+		if io then
+			local real_Msg = _G.Msg
+			_G.Msg = MsgPrinter
+			PrintTable(tbl)
+			_G.Msg = real_Msg
+		end
 	else
 		print(...)
+		if io then
+			ioPrinter(true, ...)
+		end
 	end
 end
 
@@ -60,13 +80,13 @@ local function isUnknown(value)
 	return istable(value) and getmetatable(value) == META_UNKNOWN
 end
 E2Lib.isUnknown = isUnknown
--- Returns a new 'unknown' value handle (or returns the existing one if value is already of type 'unknown').
+-- Returns a new 'unknown' value handle.
 function E2Lib.createUnknown(typeid, value)
 	assert(isstring(typeid) and #typeid > 0 and wire_expression_types2[typeid], string.format("bad argument #1 to 'createUnknown' (string expected, got %s)", type(typeid)))
-	E2Lib.debugPrint('**** [createUnknown] typeid: ' .. typeid .. "  value: " .. tostring(value))
+	E2Lib.debugPrint('(createUnknown) typeid: ' .. typeid .. "  value: " .. tostring(value))
 	if isUnknown(value) then
-		assert(typeid == "xxx", "attempted to createUnknown from existing 'unknown', but typeid mismatch: " .. typeid)
-		return value
+		--assert(typeid == "xxx", "attempted to createUnknown from existing 'unknown', but typeid mismatch: " .. typeid)
+		typeid, value = value[1], value[2]
 	end
 	return setmetatable({}, {
 		__index = setmetatable({ typeid, value }, { __mode="v" });

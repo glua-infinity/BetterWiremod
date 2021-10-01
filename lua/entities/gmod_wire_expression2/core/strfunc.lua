@@ -74,35 +74,46 @@ end
 
 __e2setcost(20)
 
+local function ShallowCopy(tbl)
+	local ret = {}
+	for k, v in next, tbl do
+		ret[k] = v
+	end
+	return ret
+end
+
 registerOperator( "stringcall", "", "", function(self, args)
 	local op1, funcargs, typeids, typeids_str, returntype = args[2], args[3], args[4], args[5], args[6]
 	local funcname = op1[1](self,op1)
 
-	E2Lib.debugPrint("[ stringcall ]:")
-	E2Lib.debugPrint("      ******* funcargs:") E2Lib.debugPrint(funcargs)
-	E2Lib.debugPrint("      ******* typeids:") E2Lib.debugPrint(typeids)
-	local argn = 2
+	E2Lib.debugPrint("[----- stringcall -----]")
+	E2Lib.debugPrint(" ** funcargs:") E2Lib.debugPrint(funcargs)
+	-- typeids == funcargs[#funcargs]
+	local argn, restoreTypes = 2, {}
 	for key, value in next, typeids do
 		if value == "xxx" then -- resolve 'unknown' value
 			local arg = funcargs[argn]
+			restoreTypes[key] = { arg, ShallowCopy(arg) }
 			local targetTypeID, targetValue
 			if arg.TraceName == "GET" or arg.TraceName == "VAR" then
 				local targetTable = arg[1](self, arg)
 				targetTypeID, targetValue = targetTable[1], targetTable[2]
 			else
-				error("unsupported 'unknown' typing")
+				error("unsupported 'unknown' typing: " .. tostring(arg.TraceName))
 			end
-			E2Lib.debugPrint("**************** target typeid: " .. targetTypeID .. "  target value: " .. tostring(targetValue))
-			E2Lib.debugPrint("**************** arg BEFORE:") E2Lib.debugPrint(arg)
-			E2Lib.debugPrint("**************** typeid BEFORE: " .. typeids[key])
+			E2Lib.debugPrint(" *** target typeid: " .. targetTypeID .. "  target value: " .. tostring(targetValue))
+			E2Lib.debugPrint(" *** arg BEFORE:") E2Lib.debugPrint(arg)
+			E2Lib.debugPrint(" *** typeid BEFORE: " .. typeids[key])
 			typeids[key], arg.TraceName, arg[1], arg[2], arg[3] = targetTypeID, "LITERAL", function() return targetValue end
-			E2Lib.debugPrint("**************** typeid AFTER: " .. typeids[key])
-			E2Lib.debugPrint("**************** arg AFTER:") E2Lib.debugPrint(arg)
+			E2Lib.debugPrint(" *** typeid AFTER: " .. typeids[key])
+			E2Lib.debugPrint(" *** arg AFTER:") E2Lib.debugPrint(arg)
+		else
+			E2Lib.debugPrint(" *** skipping key: " .. key .. "  value: " .. value)
 		end
 		argn = argn + 1
 	end
 	typeids_str = table.concat(typeids)
-	E2Lib.debugPrint("************* typeids_str: " .. typeids_str)
+	E2Lib.debugPrint(" ** typeids_str: " .. typeids_str)
 	local func, func_return_type = findFunc( self, funcname, typeids, typeids_str )
 
 	if not func then E2Lib.raiseException( "No such function: " .. funcname .. "(" .. tps_pretty( typeids_str ) .. ")", 0 ) end
@@ -113,10 +124,19 @@ registerOperator( "stringcall", "", "", function(self, args)
 
 	self.prf = self.prf + 40
 
+	local ret = func( self, funcargs )
+	for key, data in next, restoreTypes do
+		local ref, copy = data[1], data[2]
+		typeids[key] = "xxx"
+		for k, v in next, ref do
+			ref[k] = nil
+		end
+		for k, v in next, copy do
+			ref[k] = v
+		end
+	end
+	E2Lib.debugPrint(" ** restored original types, funcargs:") E2Lib.debugPrint(funcargs)
 	if returntype ~= "" then
-		local ret = func( self, funcargs )
 		return ret
-	else
-		func( self, funcargs )
 	end
 end)

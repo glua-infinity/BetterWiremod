@@ -50,7 +50,10 @@ end)
 
 -- Unknown
 E2Helper.Descriptions["nounknown()"] = "Returns invalid/default (unknown) value"
+E2Helper.Descriptions["toString(xxx)"] = "Returns 'unknown' handle formatted as a string"
+E2Helper.Descriptions["toString(xxx:)"] = "Returns 'unknown' handle formatted as a string"
 E2Helper.Descriptions["typeid(xxx:)"] = "Retrieves internal value's typeid"
+E2Helper.Descriptions["typeName(xxx:)"] = "Retrieves internal value's type-name"
 E2Helper.Descriptions["isValid(xxx:)"] = "Determines whether internal value is valid according to internal typeid type-check"
 
 -- Number
@@ -812,6 +815,7 @@ E2Helper.Descriptions["toString(q)"] = "Formats Q as a string"
 E2Helper.Descriptions["toString(q:)"] = "Formats Q as a string"
 
 -- Selfaware
+E2Helper.Descriptions["debugPrint(s)"] = "Debug-print text message to console"
 E2Helper.Descriptions["first()"] = "Returns 1 if the expression was spawned or reset"
 E2Helper.Descriptions["duped()"] = "Returns 1 if the expression was duplicated"
 E2Helper.Descriptions["dupefinished()"] = "Returns 1 when the contraption has finished duping."

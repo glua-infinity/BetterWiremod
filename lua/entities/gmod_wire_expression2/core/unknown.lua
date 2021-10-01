@@ -2,6 +2,7 @@ local UNKNOWN_TYPENAME, UNKNOWN_TYPEID, createUnknown, isUnknown, bool, raise = 
 
 -- This is a special type (for advanced users only).
 -- Sole purpose of bypassing type checker and being able to pass table's values directly when doing stringcalls.
+-- Extra bonus: By wrapping value as unknown, an array/table can be contained inside an array, and gtable can be contained inside a table.
 registerType("unknown", "xxx", nil,
 	nil,
 	nil,
@@ -12,8 +13,9 @@ registerType("unknown", "xxx", nil,
 	function(v)
 		-- If typecheck returns true, the type is wrong.
 		-- So, we allow every value to 'downcast' to unknown by returning false... actually not really since we bypass typecheck.
-		E2Lib.debugPrint("************* typeof v:", type(v))
-		return not isUnknown(v)
+		local is = isUnknown(v)
+		E2Lib.debugPrint("(unknown typecheck) type: " .. type(v) .. "  isUnknown: " .. (is and "yes" or "no") .. "  v: " .. tostring(v))
+		return not is
 	end
 )
 
@@ -52,7 +54,72 @@ e2function number operator!=(unknown lhs, unknown rhs)
 	return bool(lhs ~= rhs)
 end
 
+__e2setcost(2)
+
+local function ToString(xxx)
+	if not isUnknown(xxx) then return "(null)" end
+	local typeid, value = xxx[1], xxx[2]
+	return string.format("<%p>{typeid: %s, value: %s}", xxx, typeid, isstring(value) and string.format("%q", value) or tostring(value))
+end
+
+e2function string operator+(unknown lhs, string rhs)
+	return ToString(lhs) .. rhs
+end
+
+e2function string operator+(string lhs, unknown rhs)
+	return lhs .. ToString(rhs)
+end
+
 __e2setcost(5)
+
+--[[
+-- We did better in vextensions... I'll end up removing `array` type, so screw this... (not finished anyways)
+local BestGuessLookup = {
+	[TYPE_NIL] = "void"; -- technically, not possible
+	[TYPE_BOOL] = function(bool) return "n", bool and 1 or 0 end;
+	[TYPE_NUMBER] = "n";
+	[TYPE_STRING] = "s";
+	[TYPE_TABLE] = function(v)
+		if istable(v.ntypes) and istable(v.stypes) then
+			return "t"
+		end
+		local len = #v
+		if len == 0 then -- perhaps array
+		end
+		if len == 2 then -- perhaps complex/vector2
+		end
+		if len == 3 then -- perhaps angle/vector
+			return "a"
+		end
+		if len == 4 then -- perhaps matrix2/vector4
+		end
+		if len == 9 then -- matrix
+		end
+		if len == 16 then -- matrix4
+		end
+		return "r"
+	end;
+	[TYPE_THREAD] = "xco";
+	[TYPE_ENTITY] = "e";
+	[TYPE_VECTOR] = function(v) return "v", {v[1], v[2], v[3]} end;
+	[TYPE_ANGLE] = function(v) return "a", {v[1], v[2], v[3]} end;
+	[TYPE_PHYSOBJ] = "b"; -- bone? not sure
+}
+local function GuessValueTypeID(value)
+	local lookup = BestGuessLookup[TypeID(value)]
+	if isfunction(lookup) then
+		local lookup, v = lookup(value)
+		if v == nil then v = value end
+		return typeid, v
+	end
+	return lookup, value
+end
+e2 function unknown array:operator[](index)
+	local value = this[index]
+	if value == nil then return nil end
+	return createUnknown(GuessValueTypeID(value))
+end
+]]
 
 e2function unknown table:operator[](index)
 	local typeid = this.ntypes[index]
@@ -105,30 +172,44 @@ end
 
 __e2setcost(1)
 
---- Returns invalid/default (unknown) value.
+--- Returns invalid/default (unknown) value
 e2function unknown nounknown()
 	return nil
 end
 
 __e2setcost(2)
 
---- Retrieves internal value's typeid.
+--- Retrieves internal value's typeid
 e2function string unknown:typeid()
 	return isUnknown(this) and this[1] or ""
 end
 
+--- Retrieves internal value's type-name
+e2function string unknown:typeName()
+	return isUnknown(this) and wire_expression_types2[this[1]][1] or ""
+end
+
 __e2setcost(3)
 
---- Determines whether internal value is valid according to internal typeid type-check.
+--- Determines whether internal value is valid according to internal typeid type-check
 e2function number unknown:isValid()
 	if not isUnknown(this) then return 0 end
 	local typeid, value = this[1], this[2]
 	local e2type = wire_expression_types2[typeid]
 	if e2type[6] then
-		return e2type[6](value) and 0 or 1
+		return bool(not e2type[6](value))
 	end
 	return 0
 end
+
+__e2setcost(5)
+
+--- Returns 'unknown' handle formatted as a string
+e2function string toString(unknown xxx)
+	return ToString(xxx)
+end
+
+e2function string unknown:toString() = e2function string toString(unknown xxx)
 
 registerCallback("postinit", function()
 	local fixDefault, fixNormal = E2Lib.fixDefault, E2Lib.fixNormal
@@ -147,7 +228,7 @@ registerCallback("postinit", function()
 		end)
 		]]
 
-		if typeid == UNKNOWN_TYPEID then continue end
+		--if typeid == UNKNOWN_TYPEID then continue end -- Allow new instancing from existing unknown, why not.
 
 		-- XXX = unknown(<Value>)
 		registerFunction(UNKNOWN_TYPENAME, typeid, UNKNOWN_TYPEID, function(self, args)
