@@ -62,64 +62,17 @@ local function ToString(xxx)
 	return string.format("<%p>{typeid: %s, value: %s}", xxx, typeid, isstring(value) and string.format("%q", value) or tostring(value))
 end
 
+--- XXX + string
 e2function string operator+(unknown lhs, string rhs)
 	return ToString(lhs) .. rhs
 end
 
+--- string + XXX
 e2function string operator+(string lhs, unknown rhs)
 	return lhs .. ToString(rhs)
 end
 
 __e2setcost(5)
-
---[[
--- We did better in vextensions... I'll end up removing `array` type, so screw this... (not finished anyways)
-local BestGuessLookup = {
-	[TYPE_NIL] = "void"; -- technically, not possible
-	[TYPE_BOOL] = function(bool) return "n", bool and 1 or 0 end;
-	[TYPE_NUMBER] = "n";
-	[TYPE_STRING] = "s";
-	[TYPE_TABLE] = function(v)
-		if istable(v.ntypes) and istable(v.stypes) then
-			return "t"
-		end
-		local len = #v
-		if len == 0 then -- perhaps array
-		end
-		if len == 2 then -- perhaps complex/vector2
-		end
-		if len == 3 then -- perhaps angle/vector
-			return "a"
-		end
-		if len == 4 then -- perhaps matrix2/vector4
-		end
-		if len == 9 then -- matrix
-		end
-		if len == 16 then -- matrix4
-		end
-		return "r"
-	end;
-	[TYPE_THREAD] = "xco";
-	[TYPE_ENTITY] = "e";
-	[TYPE_VECTOR] = function(v) return "v", {v[1], v[2], v[3]} end;
-	[TYPE_ANGLE] = function(v) return "a", {v[1], v[2], v[3]} end;
-	[TYPE_PHYSOBJ] = "b"; -- bone? not sure
-}
-local function GuessValueTypeID(value)
-	local lookup = BestGuessLookup[TypeID(value)]
-	if isfunction(lookup) then
-		local lookup, v = lookup(value)
-		if v == nil then v = value end
-		return typeid, v
-	end
-	return lookup, value
-end
-e2 function unknown array:operator[](index)
-	local value = this[index]
-	if value == nil then return nil end
-	return createUnknown(GuessValueTypeID(value))
-end
-]]
 
 e2function unknown table:operator[](index)
 	local typeid = this.ntypes[index]
@@ -228,8 +181,6 @@ registerCallback("postinit", function()
 		end)
 		]]
 
-		--if typeid == UNKNOWN_TYPEID then continue end -- Allow new instancing from existing unknown, why not.
-
 		-- XXX = unknown(<Value>)
 		registerFunction(UNKNOWN_TYPENAME, typeid, UNKNOWN_TYPEID, function(self, args)
 			local op1 = args[2]
@@ -262,13 +213,17 @@ F(XXX)
 F(T["Epic"])
 F(T[9000])
 
+print("toString(XXX) = " + XXX)
 print("XXX:typeid() = " + XXX:typeid())
+print("XXX:typeName() = " + XXX:typeName())
 print("XXX:isValid() = " + XXX:isValid())
 
 # Output:
 # [myFunc(s)] Hello from unknown
 # [myFunc(s)] Very epic.
 # [myFunc(n)] Num=9001
+# toString(XXX) = <0x7a80faa8>{typeid: s, value: "Hello from unknown"}
 # XXX:typeid() = s
+# XXX:typeName() = STRING
 # XXX:isValid() = 1
 ]]
