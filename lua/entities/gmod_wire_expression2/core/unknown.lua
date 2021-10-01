@@ -2,7 +2,7 @@ local UNKNOWN_TYPENAME, UNKNOWN_TYPEID, createUnknown, isUnknown, bool, raise = 
 
 -- This is a special type (for advanced users only).
 -- Sole purpose of bypassing type checker and being able to pass table's values directly when doing stringcalls.
--- Extra bonus: By wrapping value as unknown, an array/table can be contained inside an array, and gtable can be contained inside a table.
+-- Extra bonus: Any value can be wrapped as unknown, therefore an array/table can be put inside an array, and gtable can be put inside a table.
 registerType("unknown", "xxx", nil,
 	nil,
 	nil,
@@ -39,7 +39,7 @@ end)
 
 __e2setcost(1)
 
---- if (unknown)
+--- if (XXX)
 e2function number operator_is(unknown xxx)
 	return bool(isUnknown(xxx))
 end
@@ -54,7 +54,7 @@ e2function number operator!=(unknown lhs, unknown rhs)
 	return bool(lhs ~= rhs)
 end
 
-__e2setcost(2)
+__e2setcost(5)
 
 local function ToString(xxx)
 	if not isUnknown(xxx) then return "(null)" end
@@ -71,8 +71,6 @@ end
 e2function string operator+(string lhs, unknown rhs)
 	return lhs .. ToString(rhs)
 end
-
-__e2setcost(5)
 
 e2function unknown table:operator[](index)
 	local typeid = this.ntypes[index]
@@ -139,7 +137,7 @@ end
 
 --- Retrieves internal value's type-name
 e2function string unknown:typeName()
-	return isUnknown(this) and wire_expression_types2[this[1]][1] or ""
+	return isUnknown(this) and string.lower(wire_expression_types2[this[1]][1]) or ""
 end
 
 __e2setcost(3)
@@ -169,17 +167,6 @@ registerCallback("postinit", function()
 	__e2setcost(5)
 	for typeName, e2type in next, wire_expression_types do
 		local typeid = e2type[1]
-
-		--- XXX = <Value>
-		--[[
-		registerOperator("ass", typeid, UNKNOWN_TYPEID, function(self, args)
-			local lhs, op2, scope = args[2], args[3], args[4]
-			local      rhs = createUnknown(typeid, op2[1](self, op2))
-			self.Scopes[scope][lhs] = rhs
-			self.Scopes[scope].vclk[lhs] = true
-			return rhs
-		end)
-		]]
 
 		-- XXX = unknown(<Value>)
 		registerFunction(UNKNOWN_TYPENAME, typeid, UNKNOWN_TYPEID, function(self, args)
@@ -222,8 +209,8 @@ print("XXX:isValid() = " + XXX:isValid())
 # [myFunc(s)] Hello from unknown
 # [myFunc(s)] Very epic.
 # [myFunc(n)] Num=9001
-# toString(XXX) = <0x7a80faa8>{typeid: s, value: "Hello from unknown"}
+# toString(XXX) = <0x7a35cb50>{typeid: s, value: "Hello from unknown"}
 # XXX:typeid() = s
-# XXX:typeName() = STRING
+# XXX:typeName() = string
 # XXX:isValid() = 1
 ]]
