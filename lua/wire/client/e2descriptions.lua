@@ -49,6 +49,8 @@ timer.Simple(0.1, function()
 end)
 
 -- Unknown
+E2Helper.Descriptions["dynamicCall(st)"] = "Invoke function via dynamic dispatch, using table values as arguments"
+E2Helper.Descriptions["dynamicCall(sts)"] = "Invoke function via dynamic dispatch, using table values as arguments, and a return value is wrapped as 'unknown'"
 E2Helper.Descriptions["nounknown()"] = "Returns invalid/default (unknown) value"
 E2Helper.Descriptions["toString(xxx)"] = "Returns 'unknown' handle formatted as a string"
 E2Helper.Descriptions["toString(xxx:)"] = "Returns 'unknown' handle formatted as a string"

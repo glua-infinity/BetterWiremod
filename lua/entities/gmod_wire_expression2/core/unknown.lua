@@ -19,9 +19,10 @@ registerType("unknown", "xxx", nil,
 	end
 )
 
-local function ThrowError(self, condition, message)
+local function ThrowError(self, condition, ...)
 	condition = bool(condition)
 	if condition ~= 0 or condition == true then return end
+	local message = select("#", ...) > 1 and string.format(...) or (...)
 	raise(message, 3, self.trace)
 	--self:throw(message)
 end
@@ -98,13 +99,13 @@ e2function unknown table:operator[](unknown xxx)
 		if typeid == nil then return nil end
 		return createUnknown(typeid, this.s[value])
 	end
-	ThrowError(self, false, "'unknown' key must be either of type string or number, got " .. E2Lib.typeName(typeid))
+	ThrowError(self, false, "'unknown' key must be either of type string or number, got %s", E2Lib.typeName(typeid))
 end
 
 e2function void table:operator[](unknown xxxKey, unknown xxxValue)
 	ThrowError(self, isUnknown(xxxKey), "'unknown' key is invalid")
 	local keyTypeid, keyValue = xxxKey[1], xxxKey[2]
-	ThrowError(self, keyTypeid == "s" or keyTypeid == "n", "'unknown' key must be either of type string or number, got " .. E2Lib.typeName(keyTypeid))
+	ThrowError(self, keyTypeid == "s" or keyTypeid == "n", "'unknown' key must be either of type string or number, got %s", E2Lib.typeName(keyTypeid))
 	E2Lib.debugPrint("keyTypeid:", keyTypeid, "keyValue:", keyValue)
 	local valueTypeid, valueValue
 	if isUnknown(xxxValue) then
@@ -161,6 +162,46 @@ e2function string toString(unknown xxx)
 end
 
 e2function string unknown:toString() = e2function string toString(unknown xxx)
+
+__e2setcost(1)
+
+local function CreateLiteralValue(value)
+	return {
+		function() return value end;
+		TraceName = "LITERAL";
+	}
+end
+
+local function DynamicCall(self, funcName, args, returnTypeID)
+	local stringcall, argTypes, argValues = wire_expression2_funcs["op:stringcall()"][3], {}, { false }
+	for index, typeid in next, args.ntypes do
+		local arg = args.n[index]
+		--if typeid == UNKNOWN_TYPEID then typeid, arg = arg[1], arg[2] end
+		argTypes[#argTypes + 1], argValues[#argValues + 1] = typeid, CreateLiteralValue(arg)
+	end
+	argValues[#argValues + 1] = argTypes
+	local result = stringcall(self, {
+		stringcall;
+		CreateLiteralValue(funcName);
+		argValues;
+		argTypes;
+		table.concat(argTypes);
+		returnTypeID;
+		TraceName = "STRINGCALL";
+	})
+	if returnTypeID == "" then return end
+	return result
+end
+
+--- Invoke function via dynamic dispatch, using table values as arguments
+e2function void dynamicCall(string funcName, table args)
+	DynamicCall(self, funcName, args, "")
+end
+
+--- Invoke function via dynamic dispatch, using table values as arguments, and a return value is wrapped as 'unknown'
+e2function unknown dynamicCall(string funcName, table args, string returnTypeID)
+	return createUnknown(returnTypeID, DynamicCall(self, funcName, args, returnTypeID))
+end
 
 registerCallback("postinit", function()
 	local fixDefault, fixNormal = E2Lib.fixDefault, E2Lib.fixNormal
