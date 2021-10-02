@@ -105,6 +105,7 @@ end
 -- Returns a fixed type-name ("normal" will return "number").
 local string_lower = string.lower
 local function fixNormal(typeName)
+	if typeName == nil then return "" end
 	typeName = string_lower(typeName)
 	if typeName == "normal" then return "number" end
 	return typeName
