@@ -1205,7 +1205,7 @@ registerCallback( "postinit", function()
 			tbl = tbl[1](self, tbl)
 
 			local statement = args[5]
-			E2Lib.debugPrint("initial statement[4]:") E2Lib.debugPrint(statement[4]) E2Lib.debugPrint()
+			--E2Lib.debugPrint("initial statement[4]:") E2Lib.debugPrint(statement[4]) E2Lib.debugPrint()
 			local types = stringMode and tbl.stypes or tbl.ntypes
 			local targetTable = stringMode and tbl.s or tbl.n
 			for key, value in next, targetTable do
@@ -1223,10 +1223,10 @@ registerCallback( "postinit", function()
 					self.Scope[valname] = unknownValue
 					E2Lib.debugPrint(" * key   :", self.Scope[keyname])
 					E2Lib.debugPrint(" * typeid:", valueTypeID)
-					E2Lib.debugPrint(" * value :", self.Scope[valname])
+					E2Lib.debugPrint(" * value :", self.Scope[valname], tostring(value))
 
 					local ok, msg = pcall(statement[1], self, statement)
-					E2Lib.debugPrint("foreach statement[4]:") E2Lib.debugPrint(statement[4]) E2Lib.debugPrint()
+					--E2Lib.debugPrint("foreach statement[4]:") E2Lib.debugPrint(statement[4]) E2Lib.debugPrint()
 
 					if not ok then
 						if msg == "break" then self:PopScope() break

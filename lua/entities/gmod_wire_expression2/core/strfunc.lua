@@ -104,7 +104,11 @@ registerOperator( "stringcall", "", "", function(self, args)
 			local targetTypeID, targetValue
 			if arg.TraceName == "GET" or arg.TraceName == "VAR" or arg.TraceName == "LITERAL" then
 				local targetTable = arg[1](self, arg)
-				targetTypeID, targetValue = targetTable[1], targetTable[2]
+				if targetTable then
+					targetTypeID, targetValue = targetTable[1], targetTable[2]
+				else
+					targetTypeID = value
+				end
 			else
 				error("unsupported 'unknown' typing: " .. tostring(arg.TraceName))
 			end

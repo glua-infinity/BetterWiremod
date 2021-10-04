@@ -176,7 +176,7 @@ local function DynamicCall(self, funcName, args, returnTypeID)
 	local stringcall, argTypes, argValues = wire_expression2_funcs["op:stringcall()"][3], {}, { false }
 	for index, typeid in next, args.ntypes do
 		local arg = args.n[index]
-		--if typeid == UNKNOWN_TYPEID then typeid, arg = arg[1], arg[2] end
+		assert(isUnknown(arg), "argument value at index " .. index .. " is not of type 'unknown'")
 		argTypes[#argTypes + 1], argValues[#argValues + 1] = typeid, CreateLiteralValue(arg)
 	end
 	argValues[#argValues + 1] = argTypes
@@ -193,12 +193,12 @@ local function DynamicCall(self, funcName, args, returnTypeID)
 	return result
 end
 
---- Invoke function via dynamic dispatch, using table values as arguments
+--- Invoke function via dynamic dispatch, using table values as arguments (must be wrapped as 'unknown')
 e2function void dynamicCall(string funcName, table args)
 	DynamicCall(self, funcName, args, "")
 end
 
---- Invoke function via dynamic dispatch, using table values as arguments, and a return value is wrapped as 'unknown'
+--- Invoke function via dynamic dispatch, using table values as arguments (must be wrapped as 'unknown'), and a return value is wrapped as 'unknown'
 e2function unknown dynamicCall(string funcName, table args, string returnTypeID)
 	return createUnknown(returnTypeID, DynamicCall(self, funcName, args, returnTypeID))
 end
