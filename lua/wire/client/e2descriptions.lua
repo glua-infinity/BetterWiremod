@@ -140,6 +140,7 @@ E2Helper.Descriptions["elevation(vav)"] = "Gets the elevation from the first pos
 E2Helper.Descriptions["heading(vav)"] = "Gets the elevation and bearing from the first position, at the specified angle, to the second position"
 E2Helper.Descriptions["changed"] = "Checks if the value or variable was changed. Accepts any type except table and array"
 E2Helper.Descriptions["wrap(nn)"] = "Performs (n1 + n2) % (n2 * 2) - n2"
+E2Helper.Descriptions["remap(nnnnn)"] = "Remaps an input value with an input minimum value and an input maximum value to an output minimum and output maximum."
 
 -- String
 E2Helper.Descriptions["index(s:n)"] = "Returns Nth letter of the string, formatted as a string"
@@ -1198,6 +1199,10 @@ E2Helper.Descriptions["holoBoneScale(ns)"] = "Returns the scale of the given hol
 E2Helper.Descriptions["holoBoneScale(nsv)"] = "Sets the scale of the given hologram named bone, as a multiplier"
 E2Helper.Descriptions["holoScaleUnits(n)"] = "Returns the scale of the given hologram in source units"
 E2Helper.Descriptions["holoScaleUnits(nv)"] = "Sets the scale of the given hologram, in source units"
+E2Helper.Descriptions["holoBonePos(nn)"] = "Returns the position of the given hologram bone"
+E2Helper.Descriptions["holoBoneAng(nn)"] = "Returns the angles of the given hologram bone"
+E2Helper.Descriptions["holoBonePos(ns)"] = "Returns the position of the given hologram named bone"
+E2Helper.Descriptions["holoBoneAng(ns)"] = "Returns the angles of the given hologram named bone"
 E2Helper.Descriptions["holoShadow(nn)"] = "Enables the hologram's shadow"
 E2Helper.Descriptions["holoVisible(nen)"] = "If 0, prevents a specific player from seeing the hologram"
 E2Helper.Descriptions["holoVisible(nrn)"] = "If 0, prevents an array of players from seeing the hologram"

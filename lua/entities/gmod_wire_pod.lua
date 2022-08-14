@@ -99,11 +99,23 @@ end
 
 -- Server
 
+local pods = ents.FindByClass("gmod_wire_pod") or {}
+local PlayerBindDownHook, PlayerBindUpHook, Wire_Pod_EnterVehicle, Wire_Pod_ExitVehicle, Wire_Pod_CanExitVehicle
+
 function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:SetUseType( SIMPLE_USE )
+
+	table.insert(pods, self)
+	if #pods == 1 then
+		hook.Add("PlayerBindDown", "gmod_wire_pod", PlayerBindDownHook)
+		hook.Add("PlayerBindUp", "gmod_wire_pod", PlayerBindUpHook)
+		hook.Add("PlayerEnteredVehicle", "Wire_Pod_EnterVehicle", Wire_Pod_EnterVehicle)
+		hook.Add("PlayerLeaveVehicle", "Wire_Pod_ExitVehicle", Wire_Pod_ExitVehicle)
+		hook.Add("CanExitVehicle","Wire_Pod_CanExitVehicle", Wire_Pod_CanExitVehicle)
+	end
 
 	local outputs = {
 		-- Keys
@@ -230,6 +242,14 @@ function ENT:UnlinkEnt()
 end
 function ENT:OnRemove()
 	self:UnlinkEnt()
+	table.RemoveByValue(pods, self)
+	if #pods == 0 then
+		hook.Remove("PlayerBindDown", "gmod_wire_pod")
+		hook.Remove("PlayerBindUp", "gmod_wire_pod")
+		hook.Remove("PlayerEnteredVehicle", "Wire_Pod_EnterVehicle")
+		hook.Remove("PlayerLeaveVehicle", "Wire_Pod_ExitVehicle")
+		hook.Remove("CanExitVehicle","Wire_Pod_CanExitVehicle")
+	end
 end
 
 function ENT:HasPod() return (self.Pod and self.Pod:IsValid()) end
@@ -249,7 +269,7 @@ function ENT:SetPod( pod )
 	if not IsValid(pod) then return true end
 
 	pod:CallOnRemove("wire_pod_remove",function()
-		self:UnlinkEnt(pod)
+		if self:IsValid() then self:UnlinkEnt(pod) end
 	end)
 
 	if IsValid(pod:GetDriver()) then
@@ -319,29 +339,29 @@ local bindingToOutput = {
 	["impulse 100"] = "Light",
 }
 
-hook.Add("PlayerBindDown", "gmod_wire_pod", function(player, binding)
+function PlayerBindDownHook(player, binding)
 	if not binding then return end
 	local output = bindingToOutput[binding]
 	if not output then return end
 
-	for _, pod in pairs(ents.FindByClass("gmod_wire_pod")) do
+	for _, pod in ipairs(pods) do
 		if pod:GetPly() == player and not pod.Disable then
 			WireLib.TriggerOutput(pod, output, 1)
 		end
 	end
-end)
+end
 
-hook.Add("PlayerBindUp", "gmod_wire_pod", function(player, binding)
+function PlayerBindUpHook(player, binding)
 	if not binding then return end
 	local output = bindingToOutput[binding]
 	if not output then return end
 
-	for _, pod in pairs(ents.FindByClass("gmod_wire_pod")) do
+	for _, pod in ipairs(pods) do
 		if pod:GetPly() == player and not pod.Disable then
 			WireLib.TriggerOutput(pod, output, 0)
 		end
 	end
-end)
+end
 
 -- Helper function for ejecting players using the RC remote
 function ENT:RCEject()
@@ -575,29 +595,29 @@ function ENT:PlayerExited()
 	self:SetPly( nil )
 end
 
-hook.Add( "PlayerEnteredVehicle", "Wire_Pod_EnterVehicle", function( ply, vehicle )
-	for _, v in pairs( ents.FindByClass( "gmod_wire_pod" ) ) do
+function Wire_Pod_EnterVehicle( ply, vehicle )
+	for _, v in ipairs(pods) do
 		if (v:HasPod() and v:GetPod() == vehicle) then
 			v:PlayerEntered( ply )
 		end
 	end
-end)
+end
 
-hook.Add( "PlayerLeaveVehicle", "Wire_Pod_ExitVehicle", function( ply, vehicle )
-	for _, v in pairs( ents.FindByClass( "gmod_wire_pod" ) ) do
+function Wire_Pod_ExitVehicle( ply, vehicle )
+	for _, v in ipairs(pods) do
 		if (v:HasPod() and v:GetPod() == vehicle) then
 			v:PlayerExited()
 		end
 	end
-end)
+end
 
-hook.Add("CanExitVehicle","Wire_Pod_CanExitVehicle", function( vehicle, ply )
-	for _, v in pairs( ents.FindByClass( "gmod_wire_pod" ) ) do
+function Wire_Pod_CanExitVehicle( vehicle, ply )
+	for _, v in ipairs(pods) do
 		if (v:HasPod() and v:GetPod() == vehicle) and v.Locked and v.AllowLockInsideVehicle:GetBool() then
 			return false
 		end
 	end
-end)
+end
 
 function ENT:GetBeaconPos(sensor)
 	return self.VPos

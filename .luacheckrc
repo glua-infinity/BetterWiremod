@@ -3286,6 +3286,9 @@ stds.garrysmod.read_globals = {
   "RT_SIZE_FULL_FRAME_BUFFER",
   "RT_SIZE_OFFSCREEN",
   "RT_SIZE_FULL_FRAME_BUFFER_ROUNDED_UP",
+  "RT_SIZE_REPLAY_SCREENSHOT",
+  "RT_SIZE_LITERAL",
+  "RT_SIZE_LITERAL_PICMIP",
 
   --- SCHED
   "LAST_SHARED_SCHEDULE",
@@ -3665,13 +3668,8 @@ stds.wiremod.globals = {
   "EGP",
   "Expression2GetName",
   "Expression2SetName",
-  "e2_extpp_init",
-  "e2_extpp_pass1",
-  "e2_extpp_pass2",
   "e2_function_data_received",
-  "e2_get_typeid",
   "e2_hardquota",
-  "e2_parse_args",
   "e2_softquota",
   "e2_tickquota",
   "wire_expression_callbacks",

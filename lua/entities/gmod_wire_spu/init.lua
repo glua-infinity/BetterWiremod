@@ -123,7 +123,7 @@ function ENT:ResendCache(player)
 end
 
 local function SPU_PlayerRespawn(player)
-  for _,Entity in pairs(ents.FindByClass("gmod_wire_spu")) do
+  for _,Entity in ipairs(ents.FindByClass("gmod_wire_spu")) do
     Entity:ResendCache(player)
   end
 end
@@ -198,7 +198,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
   BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 
   self.SerialNo = info.SerialNo or 999999
-  self.RAMSize  = info.RAMSize or 65536
+  self.RAMSize  = math.Clamp(info.RAMSize or 65536, 0, 2097152)
   self.ChipType = info.ChipType or 0
   self.Memory = {}
 

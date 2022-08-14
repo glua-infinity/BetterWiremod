@@ -259,12 +259,9 @@ registerOperator("ass", "t", "t", function(self, args)
 	local      rhs = op2[1](self, op2)
 
 	local Scope = self.Scopes[scope]
-	if !Scope.lookup then Scope.lookup = {} end
-
 	local lookup = Scope.lookup
-	if (lookup[rhs]) then lookup[rhs][lhs] = nil end
-	if (!lookup[rhs]) then lookup[rhs] = {} end
-	lookup[rhs][lhs] = true
+	if !lookup then lookup = {} Scope.lookup = lookup end
+	if lookup[rhs] then lookup[rhs][lhs] = true else lookup[rhs] = {[lhs] = true} end
 
 	Scope[lhs] = rhs
 	Scope.vclk[lhs] = true
@@ -326,14 +323,13 @@ end)
 __e2setcost(1)
 
 -- Creates a table
-e2function table table(...)
+e2function table table(...tbl)
 	local ret = newE2Table()
-	if select("#", ...) == 0 then return ret end -- Don't construct table
+	if #tbl == 0 then return ret end -- Don't construct table
 
-	local tbl = {...}
 	local size = 0
 
-	for k, v in ipairs( tbl ) do
+	for k, v in ipairs(tbl) do
 		local tid = typeids[k]
 		if blocked_types[tid] then
 			self:throw("Type '" .. wire_expression_types2[tid][1] .. "' is not allowed inside of a table")
@@ -1169,8 +1165,8 @@ registerCallback( "postinit", function()
 			local op1, op2, op3 = args[2], args[3], args[4]
 			local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self,op3)
 			if rv3 == nil then return end
-			if rv2 < 0 then return end
-			if rv2 > 2^31 then return end -- too large, possibility of crashing gmod
+			if rv2 < 0 then return self:throw("Insert key cannot be negative!") end
+			if rv2 > 2^31 then return self:throw("Insert key too large!") end -- too large, possibility of crashing gmod
 			rv1.size = rv1.size + 1
 			table.insert( rv1.n, rv2, rv3 )
 			table.insert( rv1.ntypes, rv2, id )
@@ -1267,7 +1263,7 @@ registerCallback("postexecute", function(self)
 		local still_assigned = false
 		-- For each value, go through the variables they're assigned to and trigger them.
 		for varname,_ in pairs(varnames) do
-			if value == Scope[varname] then
+			if rawequal(value,Scope[varname]) then
 				-- The value is still assigned to the variable? => trigger it.
 				if clk then vclk[varname] = true end
 				still_assigned = true
@@ -1289,6 +1285,11 @@ end)
 local tbls = {
 	ARRAY = true,
 	TABLE = true,
+	VECTOR = true,
+	VECTOR2 = true,
+	VECTOR4 = true,
+	ANGLE = true,
+	QUATERNION = true,
 }
 
 registerCallback("construct", function(self)

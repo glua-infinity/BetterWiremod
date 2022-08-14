@@ -17,6 +17,8 @@ local wire_holograms_modelany = CreateConVar( "wire_holograms_modelany", "0", {F
 	"1: Allow holograms to use models besides the official hologram models." ..
 	"2: Allow holograms to additionally use models not present on the server." )
 local wire_holograms_size_max = CreateConVar( "wire_holograms_size_max", "50", {FCVAR_ARCHIVE} )
+CreateConVar( "wire_holograms_display_owners_maxdist", "-1", {FCVAR_ARCHIVE + FCVAR_REPLICATED},
+	"The maximum distance that wire_holograms_display_owners will allow names to be seen. -1 for original function. Server-side and has priority over clients.", -1, 32768)
 util.AddNetworkString("wire_holograms_set_visible")
 util.AddNetworkString("wire_holograms_clip")
 util.AddNetworkString("wire_holograms_set_scale")
@@ -176,8 +178,8 @@ local clip_queue = {}
 local vis_queue = {}
 local player_color_queue = {}
 
---[[ helper function to add items to a queue 
-	parameters: 
+--[[ helper function to add items to a queue
+	parameters:
 		queue - the queue to add to
 		ply - the player who ran the command
 		holo - holo table entry
@@ -368,7 +370,7 @@ local function rescale(Holo, scale, bone)
 			local y = math.Clamp( b_scale[2], minval, maxval )
 			local z = math.Clamp( b_scale[3], minval, maxval )
 			local scale = Vector(x, y, z)
-			
+
 			add_queue( bone_scale_queue, Holo.e2owner, Holo, bidx, scale )
 			Holo.bone_scale[bidx] =  scale
 		else  -- reset holo bone scale
@@ -512,8 +514,6 @@ local function MakeHolo(Player, Pos, Ang, model)
 	WireLib.setAng(prop, Ang)
 	prop:SetModel(model)
 	prop:SetPlayer(Player)
-	prop:SetNWInt("ownerid", Player:UserID())
-
 	return prop
 end
 
@@ -529,6 +529,13 @@ local function CheckIndex(self, index, shouldbenil)
 	end
 	if (not Holo or not IsValid(Holo.ent)) and not shouldbenil then return self:throw("Holo at index " .. index .. " does not exist!", nil) end
 	return Holo
+end
+
+-- checks if a bone id is valid for a holo, throws an error for @strict if not.
+local function CheckBone(self, index, boneindex, Holo)
+	local name = Holo.ent:GetBoneName(boneindex)
+	if not name or name == "__INVALIDBONE__" then return self:throw("Holo at index " .. index .. " does not have a bone " .. boneindex .. "!", nil) end
+	return true
 end
 
 -- Sets the given index to the given hologram.
@@ -857,10 +864,12 @@ e2function vector holoScaleUnits(index)
 	return Vector(scale[1] * propsize.x, scale[2] * propsize.y, scale[3] * propsize.z)
 end
 
+-- -----------------------------------------------------------------------------
 
 e2function void holoBoneScale(index, boneindex, vector scale)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
+	if not CheckBone(self, index, boneindex, Holo) then return end
 
 	rescale(Holo, nil, {boneindex, scale})
 end
@@ -869,29 +878,66 @@ e2function void holoBoneScale(index, string bone, vector scale)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
 	local boneindex = Holo.ent:LookupBone(bone)
-	if boneindex == nil then return self:throw("Invalid bone ['" .. bone .. "']", nil) end
+	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", nil) end
 
 	rescale(Holo, nil, {boneindex, scale})
 end
 
 e2function vector holoBoneScale(index, boneindex)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", {0,0,0}) end
+	if not Holo then return {0,0,0} end
+	if not CheckBone(self, index, boneindex, Holo) then return {0,0,0} end
 
-	local scale = Holo.bone_scale[boneindex]
-	if not scale then return self:throw("Bone " .. index .. " does not exist!", {0, 0, 0}) end
-	return scale
+	return Holo.bone_scale[boneindex] or {1,1,1}
 end
 
 e2function vector holoBoneScale(index, string bone)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", {0,0,0}) end
+	if not Holo then return {0,0,0} end
 	local boneindex = Holo.ent:LookupBone(bone)
 
-	local scale = Holo.bone_scale[boneindex]
-	if not boneindex or not scale then return self:throw("Bone ['" .. index .. "'] does not exist!", {0, 0, 0}) end
-	return scale
+	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", {0,0,0}) end
+	return Holo.bone_scale[boneindex] or {1,1,1}
 end
+
+e2function vector holoBonePos(index, boneindex)
+	local Holo = CheckIndex(self, index)
+	if not Holo then return {0,0,0} end
+	if not CheckBone(self, index, boneindex, Holo) then return {0,0,0} end
+	
+	return Holo.ent:GetBoneMatrix(boneindex):GetTranslation()
+end
+
+
+e2function vector holoBonePos(index, string bone)
+	local Holo = CheckIndex(self, index)
+	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", {0,0,0}) end
+
+	local boneindex = Holo.ent:LookupBone(bone)
+	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", {0,0,0}) end
+	return Holo.ent:GetBoneMatrix(boneindex):GetTranslation()
+end
+
+e2function angle holoBoneAng(index, boneindex)
+	local Holo = CheckIndex(self, index)
+	if not Holo then return {0,0,0} end
+	if not CheckBone(self, index, boneindex, Holo) then return {0,0,0} end
+	
+	return Holo.ent:GetBoneMatrix(boneindex):GetAngles()
+end
+
+
+e2function angle holoBoneAng(index, string bone)
+	local Holo = CheckIndex(self, index)
+	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", {0,0,0}) end
+
+	local boneindex = Holo.ent:LookupBone(bone)
+	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", {0,0,0}) end
+	return Holo.ent:GetBoneMatrix(boneindex):GetAngles()
+end
+
+-- -----------------------------------------------------------------------------
+
 __e2setcost(1)
 e2function number holoClipsAvailable()
 	return wire_holograms_max_clips:GetInt()
