@@ -520,7 +520,7 @@ end
 -- Returns the hologram with the given index or nil if it doesn't exist.
 -- if shouldbenil is nil or false, assert that the hologram exists on @strict with an error. Otherwise, don't check (for holo creation, etc)
 local function CheckIndex(self, index, shouldbenil)
-	index = index - index % 1
+	index = math.Clamp(math.floor(index), -2^31, 2^31)
 	local Holo
 	if index<0 then
 		Holo = E2HoloRepo[self.uid][-index]
@@ -540,7 +540,7 @@ end
 
 -- Sets the given index to the given hologram.
 local function SetIndex(self, index, Holo)
-	index = index - index % 1
+	index = math.Clamp(math.floor(index), -2^31, 2^31)
 	local rep = E2HoloRepo[self.uid]
 	if index<0 then
 		rep[-index] = Holo
@@ -637,7 +637,7 @@ local function clearholos(self)
 	-- delete global holos owned by this chip
 	local rep = E2HoloRepo[self.uid]
 	if not rep then return end
-	for index,Holo in ipairs(rep) do
+	for index,Holo in pairs(rep) do
 		if Holo.e2owner == self then remove_holo(Holo) end
 	end
 end
@@ -837,7 +837,7 @@ e2function vector holoScale(index)
 	local Holo = CheckIndex(self, index)
 	if not Holo then return end
 
-	return Holo.scale or {0,0,0} -- TODO: maybe {1,1,1}?
+	return Holo.scale or Vector(0, 0, 0) -- TODO: maybe 1,1,1?
 end
 
 e2function void holoScaleUnits(index, vector size)
@@ -855,9 +855,9 @@ end
 
 e2function vector holoScaleUnits(index)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", {0,0,0}) end
+	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", Vector(0, 0, 0)) end
 
-	local scale = Holo.scale or {0,0,0} -- TODO: maybe {1,1,1}?
+	local scale = Holo.scale or Vector(0, 0, 0) -- TODO: maybe 1,1,1?
 
 	local propsize = Holo.ent:OBBMaxs()-Holo.ent:OBBMins()
 
@@ -885,25 +885,25 @@ end
 
 e2function vector holoBoneScale(index, boneindex)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return {0,0,0} end
-	if not CheckBone(self, index, boneindex, Holo) then return {0,0,0} end
+	if not Holo then return Vector(0, 0, 0) end
+	if not CheckBone(self, index, boneindex, Holo) then return Vector(0, 0, 0) end
 
-	return Holo.bone_scale[boneindex] or {1,1,1}
+	return Holo.bone_scale[boneindex] or Vector(1, 1, 1)
 end
 
 e2function vector holoBoneScale(index, string bone)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return {0,0,0} end
+	if not Holo then return Vector(0, 0, 0) end
 	local boneindex = Holo.ent:LookupBone(bone)
 
-	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", {0,0,0}) end
-	return Holo.bone_scale[boneindex] or {1,1,1}
+	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", Vector(0, 0, 0)) end
+	return Holo.bone_scale[boneindex] or Vector(1, 1, 1)
 end
 
 e2function vector holoBonePos(index, boneindex)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return {0,0,0} end
-	if not CheckBone(self, index, boneindex, Holo) then return {0,0,0} end
+	if not Holo then return Vector(0, 0, 0) end
+	if not CheckBone(self, index, boneindex, Holo) then return Vector(0, 0, 0) end
 	
 	return Holo.ent:GetBoneMatrix(boneindex):GetTranslation()
 end
@@ -911,17 +911,17 @@ end
 
 e2function vector holoBonePos(index, string bone)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", {0,0,0}) end
+	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", Vector(0, 0, 0)) end
 
 	local boneindex = Holo.ent:LookupBone(bone)
-	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", {0,0,0}) end
+	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", Vector(0, 0, 0)) end
 	return Holo.ent:GetBoneMatrix(boneindex):GetTranslation()
 end
 
 e2function angle holoBoneAng(index, boneindex)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return {0,0,0} end
-	if not CheckBone(self, index, boneindex, Holo) then return {0,0,0} end
+	if not Holo then return Angle(0, 0, 0) end
+	if not CheckBone(self, index, boneindex, Holo) then return Angle(0, 0, 0) end
 	
 	return Holo.ent:GetBoneMatrix(boneindex):GetAngles()
 end
@@ -929,10 +929,10 @@ end
 
 e2function angle holoBoneAng(index, string bone)
 	local Holo = CheckIndex(self, index)
-	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", {0,0,0}) end
+	if not Holo then return self:throw("Holo at index " .. index .. " does not exist!", Angle(0, 0, 0)) end
 
 	local boneindex = Holo.ent:LookupBone(bone)
-	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", {0,0,0}) end
+	if boneindex == nil then return self:throw("Holo at index " .. index .. " does not have a bone ['" .. bone .. "']!", Angle(0, 0, 0)) end
 	return Holo.ent:GetBoneMatrix(boneindex):GetAngles()
 end
 
@@ -1368,7 +1368,7 @@ concommand.Add( "wire_holograms_block_id", function( ply, com, args )
 			player:PrintMessage( HUD_PRINTTALK, "(ADMIN) " .. steamID .. " added to holograms blocklist" )
 		end
 		local uid
-		for _,v in pairs( player.GetAll() ) do
+		for _,v in ipairs( player.GetAll() ) do
 			if v:SteamID() == steamID then
 				uid = v:UniqueID()
 				if (E2HoloRepo[uid]) then

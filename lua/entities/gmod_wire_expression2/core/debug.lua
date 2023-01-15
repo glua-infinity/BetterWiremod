@@ -106,20 +106,21 @@ e2function number playerCanPrint()
 end
 
 local function SpecialCase( arg )
-	if istable(arg) then
+	local t = type(arg)
+	if t == "table" then
 		if (arg.isfunction) then
 			return "function " .. arg[3] .. " = (" .. arg[2] .. ")"
 		elseif (seq(arg)) then -- A table with only numerical indexes
 			local str = "["
 			for k,v in ipairs( arg ) do
 				if istable(v) then
-					if (k != #arg) then
+					if (k ~= #arg) then
 						str = str .. SpecialCase( v ) .. ","
 					else
 						str = str .. SpecialCase( v ) .. "]"
 					end
 				else
-					if (k != #arg) then
+					if (k ~= #arg) then
 						str = str .. tostring(v) .. ","
 					else
 						str = str .. tostring(v) .. "]"
@@ -130,6 +131,10 @@ local function SpecialCase( arg )
 		else -- Else it's a table with string indexes (which this function can't handle)
 			return "[table]"
 		end
+	elseif t == "Vector" then
+		return string.format("vec(%.2f,%.2f,%.2f)", arg[1], arg[2], arg[3])
+	elseif t == "Angle" then
+		return string.format("ang(%d,%d,%d)", arg[1], arg[2], arg[3])
 	end
 end
 
@@ -245,7 +250,7 @@ do
 		local keys = table.GetKeys( t )
 
 		table.sort( keys, function( a, b )
-			if ( isnumber( a ) && isnumber( b ) ) then return a < b end
+			if ( isnumber( a ) and isnumber( b ) ) then return a < b end
 			return tostring( a ) < tostring( b )
 		end )
 
@@ -254,7 +259,7 @@ do
 			local value = t[ key ]
 			Msg( string.rep( "\t", indent ) )
 
-			if  ( istable( value ) && !done[ value ] ) then
+			if  ( istable( value ) and !done[ value ] ) then
 
 				done[ value ] = true
 				Msg( tostring( key ) .. ":" .. "\n" )

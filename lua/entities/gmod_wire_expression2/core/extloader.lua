@@ -26,7 +26,7 @@ if ENT then
 		local chips = ents.FindByClass( "gmod_wire_expression2" )
 		for _, chip in ipairs( chips ) do
 			if not chip.error then
-				chip:PCallHook( "destruct" )
+				chip:Destruct()
 			end
 			chip.script = nil
 		end
@@ -161,6 +161,7 @@ e2_include("egpfunctions.lua")
 e2_include("functions.lua")
 e2_include("strfunc.lua")
 e2_include("steamidconv.lua")
+e2_include("easings.lua")
 
 -- Load serverside files here, they need additional parsing
 do
