@@ -31,16 +31,6 @@ e2function void selfDestructAll()
 end
 
 /******************************************************************************/
--- debug print
-
-__e2setcost(1)
-
---- Debug-print text message to console
-e2function void debugPrint(string text)
-	E2Lib.debugPrint(text)
-end
-
-/******************************************************************************/
 -- i/o functions
 
 __e2setcost(10)
@@ -233,6 +223,7 @@ local comparable_types = {
 }
 
 registerCallback("postinit", function()
+	E2Lib.currentextension = "selfaware"
 	-- Angle is the same as vector
 	registerFunction("changed", "a", "n", registeredfunctions.e2_changed_v)
 

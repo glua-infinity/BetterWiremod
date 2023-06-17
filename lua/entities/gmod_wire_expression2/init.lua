@@ -4,14 +4,6 @@ include('shared.lua')
 
 DEFINE_BASECLASS("base_wire_entity")
 
--- This makes E2s not save using garry's workshop save
--- Until someone can find the cause of the crashes, leave this in here
-local old = gmsave.ShouldSaveEntity
-function gmsave.ShouldSaveEntity( ent, ... )
-	if ent:GetClass() == "gmod_wire_expression2" then return false end
-	return old( ent, ... )
-end
-
 e2_softquota = nil
 e2_hardquota = nil
 e2_tickquota = nil
@@ -275,7 +267,10 @@ end
 function ENT:Think()
 	BaseClass.Think(self)
 	self:NextThink(CurTime() + 0.030303)
-
+	
+	if not self.context then return true end
+	if self.error then return true end
+	
 	self:UpdatePerf()
 
 	if self.context.prfcount < 0 then self.context.prfcount = 0 end
@@ -285,8 +280,6 @@ function ENT:Think()
 	self.context.prf = 0
 	self.context.time = 0
 
-	if not self.context then return true end
-	if self.error then return true end
 	if e2_timequota > 0 and self.context.timebench > e2_timequota then
 		self:Error("Expression 2 (" .. self.name .. "): time quota exceeded", "time quota exceeded")
 		self:PCallHook('destruct')
@@ -432,7 +425,8 @@ function ENT:ResetContext()
 		-- reduces all the opcounters based on the time passed since 
 		-- the last time the chip was reset or errored
 		-- waiting up to 30s before resetting results in a 0.1 multiplier 
-		resetPrfMult = math.max(0.1,(30 - (CurTime() - self.lastResetOrError)) / 30)
+		local passed = CurTime() - self.lastResetOrError
+		resetPrfMult = math.max(0.1, (30 - passed) / 30)
 	end
 	self.lastResetOrError = CurTime()
 
@@ -601,7 +595,11 @@ function ENT:Reset()
 	self.context.resetting = true
 
 	-- reset the chip in the next tick
-	timer.Simple(0, function() if IsValid(self) then self:Setup(self.original, self.inc_files) end end)
+	timer.Simple(0, function()
+		if IsValid(self) then
+			self:Setup(self.original, self.inc_files)
+		end
+	end)
 end
 
 function ENT:TriggerInput(key, value)

@@ -268,7 +268,9 @@ e2function string inputClkName()
 	return self.triggerinput or ""
 end
 
-E2Lib.registerEvent("input", {"s"})
+E2Lib.registerEvent("input", {
+	{ "InputName", "s" }
+})
 
 -- This MUST be the first destruct hook!
 registerCallback("destruct", function(self)
@@ -294,7 +296,9 @@ e2function number last()
 end
 
 -- number (whether it is being reset or just removed)
-E2Lib.registerEvent("removed", { "n" })
+E2Lib.registerEvent("removed", {
+	{ "Resetting", "n" }
+})
 
 -- dupefinished()
 -- Made by Divran
@@ -484,6 +488,7 @@ end
 __e2setcost(nil)
 
 registerCallback("postinit", function()
+	E2Lib.currentextension = "core"
 	-- Returns the Nth value given after the index, the type's zero element otherwise. If you mix types, all non-matching arguments will be regarded as the 2nd argument's type's zero element.
 	for name,id,zero in pairs_map(wire_expression_types, unpack) do
 		registerFunction("select", "n"..id.."...", id, function(self, args)

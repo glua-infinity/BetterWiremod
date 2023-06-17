@@ -2,6 +2,7 @@ AddCSLuaFile()
 
 E2Lib = {
 	Env = {
+		---@type { name: string, args: { [1]: string, [2]: string }[], constructor: fun(t: table)?, destructor: fun(t: table)?, listening: table<userdata, boolean> }
 		Events = {}
 	}
 }
@@ -73,9 +74,9 @@ function E2Lib.setSubMaterial(ent, index, material)
 	duplicator.StoreEntityModifier(ent, "submaterial", { ["SubMaterialOverride_"..index] = material })
 end
 
--- Returns a default e2 table.
+-- Returns a default e2 table instance.
 function E2Lib.newE2Table()
-	return {n={},ntypes={},s={},stypes={},size=0}
+	return { n = {}, ntypes = {}, s = {}, stypes = {}, size = 0 }
 end
 
 local META_UNKNOWN = newproxy()
