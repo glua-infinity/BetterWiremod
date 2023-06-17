@@ -19,6 +19,16 @@ registerType("unknown", "xxx", nil,
 	end
 )
 
+local function ToString(xxx)
+	if not isUnknown(xxx) then return "(null)" end
+	local typeid, value = xxx[1], xxx[2]
+	return string.format("<%p>{typeid: %s, value: %s}", xxx, typeid, isstring(value) and string.format("%q", value) or tostring(value))
+end
+
+WireLib.registerDebuggerFormat(UNKNOWN_TYPENAME, function(xxx, orientvertical)
+	return ToString(xxx)
+end)
+
 local function ThrowError(self, condition, ...)
 	condition = bool(condition)
 	if condition ~= 0 or condition == true then return end
@@ -56,12 +66,6 @@ e2function number operator!=(unknown lhs, unknown rhs)
 end
 
 __e2setcost(5)
-
-local function ToString(xxx)
-	if not isUnknown(xxx) then return "(null)" end
-	local typeid, value = xxx[1], xxx[2]
-	return string.format("<%p>{typeid: %s, value: %s}", xxx, typeid, isstring(value) and string.format("%q", value) or tostring(value))
-end
 
 --- XXX + string
 e2function string operator+(unknown lhs, string rhs)
@@ -228,6 +232,8 @@ registerCallback("postinit", function()
 end)
 
 --[[ Example Test E2 code:
+@strict
+
 function myFunc(Msg:string) { print("[myFunc(s)] " + Msg) }
 function myFunc(Num) { print("[myFunc(n)] Num=" + Num) }
 local F = "myFunc"
@@ -246,12 +252,18 @@ print("XXX:typeid() = " + XXX:typeid())
 print("XXX:typeName() = " + XXX:typeName())
 print("XXX:isValid() = " + XXX:isValid())
 
+foreach (I:number, V:unknown = T) { print("T[" + I + "] = " + V:toString()) }
+foreach (S:string, V:unknown = T) { print("T[" + S + "] = " + V:toString()) }
+
 # Output:
 # [myFunc(s)] Hello from unknown
 # [myFunc(s)] Very epic.
 # [myFunc(n)] Num=9001
-# toString(XXX) = <0x7a35cb50>{typeid: s, value: "Hello from unknown"}
+# toString(XXX) = <0x01246af2a0>{typeid: s, value: "Hello from unknown"}
 # XXX:typeid() = s
 # XXX:typeName() = string
 # XXX:isValid() = 1
+# T[1337] = <0x01243af260>{typeid: s, value: "Hello from unknown"}
+# T[9000] = <0x57e88f40>{typeid: n, value: 9001}
+# T[Epic] = <0x0125ed4210>{typeid: s, value: "Very epic."}
 ]]
